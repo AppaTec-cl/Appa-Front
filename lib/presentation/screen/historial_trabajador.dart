@@ -19,70 +19,74 @@ class _ContractWorkerPageState extends State<ContractWorkerPage> {
           // Expanded left sidebar with contract names as buttons
           Expanded(
             flex: 3, // Larger left sidebar
-            child: Container(
-              child: ListView(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10), // Increase vertical padding
-                    child: TextButton(
-                      onPressed: () {}, // Add functionality here
-                      child: const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Anexo de Contrato - Ajustes salariales 2024',
-                            style: TextStyle(),
-                          )),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10), // Increase vertical padding
-                    child: TextButton(
-                      onPressed: () {}, // Add functionality here
-                      child: const Align(
+            child: ListView(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 10), // Increase vertical padding
+                  child: TextButton(
+                    onPressed: () {}, // Add functionality here
+                    child: const Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Anexo de Contrato - Extensión de servicios 2023',
+                          'Anexo de Contrato - Ajustes salariales 2024',
                           style: TextStyle(),
-                        ),
+                        )),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 10), // Increase vertical padding
+                  child: TextButton(
+                    onPressed: () {}, // Add functionality here
+                    child: const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Anexo de Contrato - Extensión de servicios 2023',
+                        style: TextStyle(),
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10), // Increase vertical padding
-                    child: TextButton(
-                      onPressed: () {}, // Add functionality here
-                      child: const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Anexo de Contrato - Cambio de horarios 2022',
-                          style: TextStyle(),
-                        ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 10), // Increase vertical padding
+                  child: TextButton(
+                    onPressed: () {}, // Add functionality here
+                    child: const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Anexo de Contrato - Cambio de horarios 2022',
+                        style: TextStyle(),
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10), // Increase vertical padding
-                    child: TextButton(
-                      onPressed: () {}, // Add functionality here
-                      child: const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Anexo de Contrato - Expansión de infraestructura 2021',
-                          style: TextStyle(),
-                        ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 10), // Increase vertical padding
+                  child: TextButton(
+                    onPressed: () {}, // Add functionality here
+                    child: const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Anexo de Contrato - Expansión de infraestructura 2021',
+                        style: TextStyle(),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           // Vertical divider
-          const VerticalDivider(color: Colors.grey, width: 1),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 25.0),
+            child: VerticalDivider(
+              color: Colors.grey,
+              width: 1,
+            ),
+          ),
           // Contract image section
           Expanded(
             flex: 8,
@@ -92,7 +96,13 @@ class _ContractWorkerPageState extends State<ContractWorkerPage> {
             ),
           ),
           // Vertical divider
-          const VerticalDivider(color: Colors.grey, width: 1),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 25.0),
+            child: VerticalDivider(
+              color: Colors.grey,
+              width: 1,
+            ),
+          ),
           // Much smaller right sidebar with buttons
           Expanded(
             flex: 1, // Smaller right sidebar
