@@ -75,14 +75,12 @@ class _ContractReviewPageState extends State<ContractReviewPage>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Revisar Contrato - Gerente'),
-        backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       ),
       body: Row(
         children: <Widget>[
           Expanded(
             flex: 2,
             child: Container(
-              color: const Color.fromARGB(255, 240, 240, 240),
               child: Column(
                 children: [
                   TabBar(
@@ -148,7 +146,6 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                 ),
                 Container(
                   padding: const EdgeInsets.all(10),
-                  color: const Color.fromARGB(255, 240, 240, 240),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[

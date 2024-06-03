@@ -3,9 +3,13 @@ import 'package:appatec_prototipo/presentation/screen/generar_contrato.dart';
 import 'package:appatec_prototipo/presentation/screen/revisar_contrato.dart';
 import 'package:appatec_prototipo/presentation/screen/firmar_gerente.dart';
 import 'package:appatec_prototipo/presentation/screen/historial_trabajador.dart';
+import 'package:appatec_prototipo/presentation/theme_switcher.dart';
 
 class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
+  final Function toggleTheme;
+  final bool isDarkMode;
+
+  LoginScreen({super.key, required this.toggleTheme, required this.isDarkMode});
 
   final TextEditingController loginController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -134,6 +138,10 @@ class LoginScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+      floatingActionButton: ThemeSwitcher(
+        toggleTheme: toggleTheme,
+        isDarkMode: isDarkMode,
       ),
     );
   }

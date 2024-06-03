@@ -22,65 +22,60 @@ class _GerentPageState extends State<GerentPage>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Revisar Contrato - Gerente General'),
-        backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       ),
       body: Row(
         children: <Widget>[
           // Sidebar with tabs and a very light gray background
           Expanded(
             flex: 2,
-            child: Container(
-              color: const Color.fromARGB(
-                  255, 240, 240, 240), // Very light gray color
-              child: Column(
-                children: [
-                  TabBar(
-                    controller: _tabController,
-                    tabs: const [
-                      Tab(text: 'Pendientes'),
-                      Tab(text: 'Revisados'),
-                    ],
-                  ),
-                  Expanded(
-                      child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      ListView(
-                        children: <Widget>[
-                          ListTile(
-                            title: Text('Contrato de Juan'),
-                            onTap: () {},
-                          ),
-                          ListTile(
-                            title: Text('Contrato de Nicolás'),
-                            onTap: () {},
-                          ),
-                          ListTile(
-                            title: Text('Contrato de Miguel'),
-                            onTap: () {},
-                          ),
-                        ],
-                      ),
-                      ListView(
-                        children: <Widget>[
-                          ListTile(
-                            title: Text('Contrato de Ana'),
-                            onTap: () {},
-                          ),
-                          ListTile(
-                            title: Text('Contrato de Pedro'),
-                            onTap: () {},
-                          ),
-                          ListTile(
-                            title: Text('Contrato de María'),
-                            onTap: () {},
-                          ),
-                        ],
-                      ),
-                    ],
-                  ))
-                ],
-              ),
+            child: Column(
+              children: [
+                TabBar(
+                  controller: _tabController,
+                  tabs: const [
+                    Tab(text: 'Pendientes'),
+                    Tab(text: 'Revisados'),
+                  ],
+                ),
+                Expanded(
+                    child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    ListView(
+                      children: <Widget>[
+                        ListTile(
+                          title: Text('Contrato de Juan'),
+                          onTap: () {},
+                        ),
+                        ListTile(
+                          title: Text('Contrato de Nicolás'),
+                          onTap: () {},
+                        ),
+                        ListTile(
+                          title: Text('Contrato de Miguel'),
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                    ListView(
+                      children: <Widget>[
+                        ListTile(
+                          title: Text('Contrato de Ana'),
+                          onTap: () {},
+                        ),
+                        ListTile(
+                          title: Text('Contrato de Pedro'),
+                          onTap: () {},
+                        ),
+                        ListTile(
+                          title: Text('Contrato de María'),
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                  ],
+                ))
+              ],
             ),
           ),
           // Contract details section
@@ -108,8 +103,6 @@ class _GerentPageState extends State<GerentPage>
                 // Input, download button, and action buttons with padding and a specific background color
                 Container(
                   padding: const EdgeInsets.all(10),
-                  color: const Color.fromARGB(
-                      255, 240, 240, 240), // Specific background color
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
