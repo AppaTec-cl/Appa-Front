@@ -23,8 +23,8 @@ class LoginScreen extends StatelessWidget {
             flex: 2,
             child: Center(
               child: SizedBox(
-                width: 250,
-                height: 250,
+                width: 650,
+                height: 650,
                 child: Container(
                   decoration: const BoxDecoration(
                     image: DecorationImage(
@@ -106,7 +106,7 @@ class LoginScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const GerentPage(),
+                            builder: (context) => GerentPage(),
                           ),
                         );
                       } else if (loginId.isNotEmpty && password.isEmpty) {

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -16,11 +17,14 @@ class _ContractReviewPageState extends State<ContractReviewPage>
   TabController? _tabController;
   String? _localPath;
 
+  late int randomNumber;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     downloadFile();
+    randomNumber = Random().nextInt(300);
   }
 
   Future<void> downloadFile() async {
@@ -41,7 +45,7 @@ class _ContractReviewPageState extends State<ContractReviewPage>
         final file = File(_localPath!);
         final fileBytes = await file.readAsBytes();
         final filePath = await FileSaver.instance.saveFile(
-          name: 'Contrato.pdf',
+          name: 'Contrato $randomNumber.pdf',
           bytes: fileBytes,
           mimeType: MimeType.pdf,
         );
@@ -80,56 +84,54 @@ class _ContractReviewPageState extends State<ContractReviewPage>
         children: <Widget>[
           Expanded(
             flex: 2,
-            child: Container(
-              child: Column(
-                children: [
-                  TabBar(
-                    controller: _tabController,
-                    tabs: const [
-                      Tab(text: 'Pendientes'),
-                      Tab(text: 'Revisados'),
-                    ],
-                  ),
-                  Expanded(
-                      child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      ListView(
-                        children: <Widget>[
-                          ListTile(
-                            title: const Text('Contrato de Juan'),
-                            onTap: () {},
-                          ),
-                          ListTile(
-                            title: const Text('Contrato de Nicolás'),
-                            onTap: () {},
-                          ),
-                          ListTile(
-                            title: const Text('Contrato de Miguel'),
-                            onTap: () {},
-                          ),
-                        ],
-                      ),
-                      ListView(
-                        children: <Widget>[
-                          ListTile(
-                            title: const Text('Contrato de Ana'),
-                            onTap: () {},
-                          ),
-                          ListTile(
-                            title: const Text('Contrato de Pedro'),
-                            onTap: () {},
-                          ),
-                          ListTile(
-                            title: const Text('Contrato de María'),
-                            onTap: () {},
-                          ),
-                        ],
-                      ),
-                    ],
-                  ))
-                ],
-              ),
+            child: Column(
+              children: [
+                TabBar(
+                  controller: _tabController,
+                  tabs: const [
+                    Tab(text: 'Pendientes'),
+                    Tab(text: 'Revisados'),
+                  ],
+                ),
+                Expanded(
+                    child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    ListView(
+                      children: <Widget>[
+                        ListTile(
+                          title: const Text('Contrato de Juan'),
+                          onTap: () {},
+                        ),
+                        ListTile(
+                          title: const Text('Contrato de Nicolás'),
+                          onTap: () {},
+                        ),
+                        ListTile(
+                          title: const Text('Contrato de Miguel'),
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                    ListView(
+                      children: <Widget>[
+                        ListTile(
+                          title: const Text('Contrato de Ana'),
+                          onTap: () {},
+                        ),
+                        ListTile(
+                          title: const Text('Contrato de Pedro'),
+                          onTap: () {},
+                        ),
+                        ListTile(
+                          title: const Text('Contrato de María'),
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                  ],
+                ))
+              ],
             ),
           ),
           Expanded(
@@ -157,9 +159,9 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                               saveFileLocally, // Acción para descargar y guardar localmente
                         ),
                       ),
-                      Expanded(
+                      const Expanded(
                         child: TextField(
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Correcciones',
                             border: OutlineInputBorder(),
                           ),
@@ -168,12 +170,24 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Correcciones enviadas correctamente')),
+                            );
+                          },
                           child: const Text('Rechazar'),
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('Contrato validado correctamente')),
+                          );
+                        },
                         child: const Text('Validar'),
                       ),
                     ],

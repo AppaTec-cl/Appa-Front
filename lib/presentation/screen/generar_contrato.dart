@@ -1,8 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:appatec_prototipo/presentation/screen/contrato_generado.dart';
 
-class GenerateContractScreen extends StatelessWidget {
+class GenerateContractScreen extends StatefulWidget {
   const GenerateContractScreen({super.key});
+
+  @override
+  State<GenerateContractScreen> createState() => _GenerateContractScreenState();
+}
+
+class _GenerateContractScreenState extends State<GenerateContractScreen> {
+  final TextEditingController _dateController1 = TextEditingController();
+  final TextEditingController _dateController2 = TextEditingController();
+  final TextEditingController _dateController3 = TextEditingController();
+
+  bool _isChecked = false;
+
+  @override
+  void dispose() {
+    _dateController1.dispose();
+    _dateController2.dispose();
+    _dateController3.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,22 +92,22 @@ class GenerateContractScreen extends StatelessWidget {
       const Text('Datos Personales',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
       const SizedBox(height: 20),
-      TextField(
-        decoration: const InputDecoration(
+      const TextField(
+        decoration: InputDecoration(
           labelText: 'Nombres',
           border: OutlineInputBorder(),
         ),
       ),
       const SizedBox(height: 20),
-      TextField(
-        decoration: const InputDecoration(
+      const TextField(
+        decoration: InputDecoration(
           labelText: 'Apellidos',
           border: OutlineInputBorder(),
         ),
       ),
       const SizedBox(height: 20),
-      TextField(
-        decoration: const InputDecoration(
+      const TextField(
+        decoration: InputDecoration(
           labelText: 'Dirección Completa',
           border: OutlineInputBorder(),
         ),
@@ -108,10 +127,12 @@ class GenerateContractScreen extends StatelessWidget {
       ),
       const SizedBox(height: 20),
       TextField(
+        controller: _dateController1,
         decoration: const InputDecoration(
           labelText: 'Fecha de Nacimiento',
           border: OutlineInputBorder(),
         ),
+        readOnly: true,
         onTap: () async {
           DateTime? date = await showDatePicker(
             context: context,
@@ -119,7 +140,10 @@ class GenerateContractScreen extends StatelessWidget {
             firstDate: DateTime(1900),
             lastDate: DateTime.now(),
           );
-          // Set date to your text field
+          if (date != null) {
+            String formattedDate = '${date.day}/${date.month}/${date.year}';
+            _dateController1.text = formattedDate;
+          }
         },
       ),
     ];
@@ -130,15 +154,15 @@ class GenerateContractScreen extends StatelessWidget {
       const Text('Información Laboral',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
       const SizedBox(height: 20),
-      TextField(
-        decoration: const InputDecoration(
+      const TextField(
+        decoration: InputDecoration(
           labelText: 'RUT (Sin puntos y con guión)',
           border: OutlineInputBorder(),
         ),
       ),
       const SizedBox(height: 20),
-      TextField(
-        decoration: const InputDecoration(
+      const TextField(
+        decoration: InputDecoration(
           labelText: 'Correo Electrónico',
           border: OutlineInputBorder(),
         ),
@@ -210,10 +234,12 @@ class GenerateContractScreen extends StatelessWidget {
       ),
       const SizedBox(height: 20),
       TextField(
+        controller: _dateController2,
         decoration: const InputDecoration(
           labelText: 'Fecha Inicio Contrato',
           border: OutlineInputBorder(),
         ),
+        readOnly: true,
         onTap: () async {
           DateTime? date = await showDatePicker(
             context: context,
@@ -221,23 +247,31 @@ class GenerateContractScreen extends StatelessWidget {
             firstDate: DateTime(1900),
             lastDate: DateTime.now(),
           );
-          // Set date to your text field
+          if (date != null) {
+            String formattedDate = '${date.day}/${date.month}/${date.year}';
+            _dateController2.text = formattedDate;
+          }
         },
       ),
       const SizedBox(height: 20),
       TextField(
+        controller: _dateController3,
         decoration: const InputDecoration(
           labelText: 'Fecha Finalización Contrato',
           border: OutlineInputBorder(),
         ),
+        readOnly: true,
         onTap: () async {
           DateTime? date = await showDatePicker(
             context: context,
             initialDate: DateTime.now(),
-            firstDate: DateTime(1900),
-            lastDate: DateTime.now(),
+            firstDate: DateTime.now(),
+            lastDate: DateTime(2100),
           );
-          // Set date to your text field
+          if (date != null) {
+            String formattedDate = '${date.day}/${date.month}/${date.year}';
+            _dateController3.text = formattedDate;
+          }
         },
       ),
       const SizedBox(height: 20),
@@ -249,8 +283,8 @@ class GenerateContractScreen extends StatelessWidget {
       ),
       const SizedBox(height: 20),
       const SizedBox(height: 20),
-      TextField(
-        decoration: const InputDecoration(
+      const TextField(
+        decoration: InputDecoration(
           labelText: 'Dirección de Trabajo',
           border: OutlineInputBorder(),
         ),
@@ -258,18 +292,28 @@ class GenerateContractScreen extends StatelessWidget {
       const SizedBox(height: 20),
       Row(
         children: [
-          Checkbox(value: false, onChanged: (bool? value) {}),
+          Checkbox(
+            value: _isChecked,
+            onChanged: (bool? value) {
+              setState(() {
+                _isChecked = value!;
+              });
+            },
+          ),
           const Expanded(child: Text('Acepto los términos y condiciones')),
         ],
       ),
       const SizedBox(height: 40),
       ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ContractScreen()),
-          );
-        },
+        onPressed: _isChecked
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ContractScreen()),
+                );
+              }
+            : null,
         style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 50)),
         child: const Text('Generar Contrato'),
@@ -284,32 +328,32 @@ class GenerateContractScreen extends StatelessWidget {
         return SimpleDialog(
           title: const Text('Detalles del Sueldo'),
           children: <Widget>[
-            SimpleDialogOption(
-              child: const TextField(
+            const SimpleDialogOption(
+              child: TextField(
                 decoration: InputDecoration(
                   labelText: 'Sueldo Base',
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
-            SimpleDialogOption(
-              child: const TextField(
+            const SimpleDialogOption(
+              child: TextField(
                 decoration: InputDecoration(
                   labelText: 'Asignación de Colación',
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
-            SimpleDialogOption(
-              child: const TextField(
+            const SimpleDialogOption(
+              child: TextField(
                 decoration: InputDecoration(
                   labelText: 'Gratificación (%)',
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
-            SimpleDialogOption(
-              child: const TextField(
+            const SimpleDialogOption(
+              child: TextField(
                 decoration: InputDecoration(
                   labelText: 'Bono de Asistencia',
                   border: OutlineInputBorder(),
