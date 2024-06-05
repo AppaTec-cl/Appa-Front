@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 // import 'package:appatec_prototipo/presentation/screen/contrato_generado.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
-import 'dart:io';
 import 'package:appatec_prototipo/generate/plantilla.dart';
+import 'package:intl/intl.dart';
 
 class GenerateContractScreen extends StatefulWidget {
   const GenerateContractScreen({super.key});
@@ -27,7 +24,9 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
   final TextEditingController _direccion = TextEditingController();
   final TextEditingController _rut = TextEditingController();
   final TextEditingController _correo = TextEditingController();
-  final TextEditingController _direcciont = TextEditingController();
+  final TextEditingController _sueldoBase = TextEditingController();
+  final TextEditingController _colacion = TextEditingController();
+  final TextEditingController _bonoAsistencia = TextEditingController();
 
   bool _isChecked = false;
 
@@ -164,7 +163,9 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
             lastDate: DateTime.now(),
           );
           if (date != null) {
-            String formattedDate = '${date.day}/${date.month}/${date.year}';
+            // Usar DateFormat de intl para formatear la fecha
+            String formattedDate =
+                DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES').format(date);
             _dateControllernaci.text = formattedDate;
           }
         },
@@ -285,7 +286,8 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
             lastDate: DateTime.now(),
           );
           if (date != null) {
-            String formattedDate = '${date.day}/${date.month}/${date.year}';
+            String formattedDate =
+                DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES').format(date);
             _dateControllerini.text = formattedDate;
           }
         },
@@ -306,7 +308,8 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
             lastDate: DateTime(2100),
           );
           if (date != null) {
-            String formattedDate = '${date.day}/${date.month}/${date.year}';
+            String formattedDate =
+                DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES').format(date);
             _dateControllerfina.text = formattedDate;
           }
         },
@@ -317,14 +320,6 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
         style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 50)),
         child: const Text('Sueldo'),
-      ),
-      const SizedBox(height: 20),
-      TextField(
-        controller: _direcciont,
-        decoration: InputDecoration(
-          labelText: 'Dirección de Trabajo',
-          border: OutlineInputBorder(),
-        ),
       ),
       const SizedBox(height: 20),
       Row(
@@ -356,7 +351,10 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
                 _afp,
                 _dateControllerini.text,
                 _dateControllerfina.text,
-                _direcciont.text)
+                _sueldoBase.text,
+                _colacion.text,
+                _bonoAsistencia.text,
+              )
             : null,
         style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 50)),
@@ -372,32 +370,27 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
         return SimpleDialog(
           title: const Text('Detalles del Sueldo'),
           children: <Widget>[
-            const SimpleDialogOption(
+            SimpleDialogOption(
               child: TextField(
+                controller: _sueldoBase,
                 decoration: InputDecoration(
                   labelText: 'Sueldo Base',
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
-            const SimpleDialogOption(
+            SimpleDialogOption(
               child: TextField(
+                controller: _colacion,
                 decoration: InputDecoration(
                   labelText: 'Asignación de Colación',
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
-            const SimpleDialogOption(
+            SimpleDialogOption(
               child: TextField(
-                decoration: InputDecoration(
-                  labelText: 'Gratificación (%)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SimpleDialogOption(
-              child: TextField(
+                controller: _bonoAsistencia,
                 decoration: InputDecoration(
                   labelText: 'Bono de Asistencia',
                   border: OutlineInputBorder(),

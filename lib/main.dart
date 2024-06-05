@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:appatec_prototipo/presentation/screen/login.dart';
-import 'package:appatec_prototipo/presentation/theme_switcher.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  runApp(const MyApp());
+  initializeDateFormatting('es_ES', null).then((_) {
+    runApp(MyApp());
+  });
 }
 
 class MyApp extends StatefulWidget {
