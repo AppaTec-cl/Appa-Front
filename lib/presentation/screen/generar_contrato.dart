@@ -360,7 +360,43 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
             minimumSize: const Size(double.infinity, 50)),
         child: const Text('Generar Contrato'),
       ),
+      const SizedBox(height: 20),
+      ElevatedButton(
+        onPressed: _isChecked ? _onGenerateButtonPressed : null,
+        style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 50)),
+        child: const Text('Enviar Contrato'),
+      ),
     ];
+  }
+
+  void _onGenerateButtonPressed() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirmación"),
+          content: Text("¿Seguro que quieres enviar el contrato?"),
+          actions: <Widget>[
+            ElevatedButton(
+              child: Text("Cancelar"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el diálogo
+              },
+            ),
+            ElevatedButton(
+              child: Text("Aceptar"),
+              onPressed: () {
+                Navigator.of(context)
+                    .pop(); // Cierra el diálogo antes de generar el PDF// Asume que tienes esta función definida
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Contrato enviado correctamente")));
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showSalaryDialog(BuildContext context) {
@@ -395,14 +431,6 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
                   labelText: 'Bono de Asistencia',
                   border: OutlineInputBorder(),
                 ),
-              ),
-            ),
-            SimpleDialogOption(
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50)),
-                child: const Text('Forma de Pago'),
               ),
             ),
             SimpleDialogOption(

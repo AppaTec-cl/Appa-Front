@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:appatec_prototipo/presentation/screen/generar_contrato.dart';
+
 import 'package:appatec_prototipo/presentation/screen/revisar_contrato.dart';
 import 'package:appatec_prototipo/presentation/screen/firmar_gerente.dart';
 import 'package:appatec_prototipo/presentation/screen/historial_trabajador.dart';
+import 'package:appatec_prototipo/presentation/screen/inicio_jefe.dart';
 import 'package:appatec_prototipo/presentation/theme_switcher.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -91,8 +92,7 @@ class LoginScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const GenerateContractScreen(),
+                            builder: (context) => InicioJefe(),
                           ),
                         );
                       } else if (loginId == '2222' && password.isNotEmpty) {

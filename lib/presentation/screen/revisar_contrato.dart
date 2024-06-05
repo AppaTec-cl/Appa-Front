@@ -6,7 +6,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:file_saver/file_saver.dart';
 
 class ContractReviewPage extends StatefulWidget {
-  const ContractReviewPage({Key? key}) : super(key: key);
+  const ContractReviewPage({super.key});
 
   @override
   _ContractReviewPageState createState() => _ContractReviewPageState();
@@ -34,9 +34,7 @@ class _ContractReviewPageState extends State<ContractReviewPage>
       final fileInfo = await DefaultCacheManager().downloadFile(url);
       _localPath = fileInfo.file.path;
       setState(() {});
-    } catch (e) {
-      print('Error al descargar el archivo: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> saveFileLocally() async {
