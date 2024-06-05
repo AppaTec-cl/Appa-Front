@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:appatec_prototipo/presentation/screen/contrato_generado.dart';
+// import 'package:appatec_prototipo/presentation/screen/contrato_generado.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'dart:io';
+import 'package:appatec_prototipo/generate/plantilla.dart';
 
 class GenerateContractScreen extends StatefulWidget {
   const GenerateContractScreen({super.key});
@@ -8,18 +13,29 @@ class GenerateContractScreen extends StatefulWidget {
   State<GenerateContractScreen> createState() => _GenerateContractScreenState();
 }
 
+String _civil = 'Soltero';
+String _nacionalidad = 'Chile';
+String _salud = 'Fonasa';
+String _afp = 'ProVida';
+
 class _GenerateContractScreenState extends State<GenerateContractScreen> {
-  final TextEditingController _dateController1 = TextEditingController();
-  final TextEditingController _dateController2 = TextEditingController();
-  final TextEditingController _dateController3 = TextEditingController();
+  final TextEditingController _dateControllernaci = TextEditingController();
+  final TextEditingController _dateControllerini = TextEditingController();
+  final TextEditingController _dateControllerfina = TextEditingController();
+  final TextEditingController _nombres = TextEditingController();
+  final TextEditingController _apellidos = TextEditingController();
+  final TextEditingController _direccion = TextEditingController();
+  final TextEditingController _rut = TextEditingController();
+  final TextEditingController _correo = TextEditingController();
+  final TextEditingController _direcciont = TextEditingController();
 
   bool _isChecked = false;
 
   @override
   void dispose() {
-    _dateController1.dispose();
-    _dateController2.dispose();
-    _dateController3.dispose();
+    _dateControllernaci.dispose();
+    _dateControllerini.dispose();
+    _dateControllerfina.dispose();
     super.dispose();
   }
 
@@ -35,7 +51,7 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       ),
       body: Row(
         children: [
-          // Primera columna: Datos personales
+          // First column: Personal details
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -51,7 +67,7 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
             ),
           ),
           const VerticalDivider(width: 1),
-          // Segunda columna: Información laboral
+          // Second column: Labor information
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -67,7 +83,7 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
             ),
           ),
           const VerticalDivider(width: 1),
-          // Tercera columna: Detalles del contrato
+          // Third column: Contract details
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -92,21 +108,24 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       const Text('Datos Personales',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
       const SizedBox(height: 20),
-      const TextField(
-        decoration: InputDecoration(
+      TextField(
+        controller: _nombres,
+        decoration: const InputDecoration(
           labelText: 'Nombres',
           border: OutlineInputBorder(),
         ),
       ),
       const SizedBox(height: 20),
-      const TextField(
+      TextField(
+        controller: _apellidos,
         decoration: InputDecoration(
           labelText: 'Apellidos',
           border: OutlineInputBorder(),
         ),
       ),
       const SizedBox(height: 20),
-      const TextField(
+      TextField(
+        controller: _direccion,
         decoration: InputDecoration(
           labelText: 'Dirección Completa',
           border: OutlineInputBorder(),
@@ -114,8 +133,12 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       ),
       const SizedBox(height: 20),
       DropdownButtonFormField<String>(
-        value: 'Soltero',
-        onChanged: (value) {},
+        value: _civil,
+        onChanged: (value) {
+          setState(() {
+            _civil = value!;
+          });
+        },
         items: const [
           DropdownMenuItem(value: 'Soltero', child: Text('Soltero')),
           DropdownMenuItem(value: 'Casado', child: Text('Casado')),
@@ -127,7 +150,7 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       ),
       const SizedBox(height: 20),
       TextField(
-        controller: _dateController1,
+        controller: _dateControllernaci,
         decoration: const InputDecoration(
           labelText: 'Fecha de Nacimiento',
           border: OutlineInputBorder(),
@@ -142,7 +165,7 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
           );
           if (date != null) {
             String formattedDate = '${date.day}/${date.month}/${date.year}';
-            _dateController1.text = formattedDate;
+            _dateControllernaci.text = formattedDate;
           }
         },
       ),
@@ -154,14 +177,16 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       const Text('Información Laboral',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
       const SizedBox(height: 20),
-      const TextField(
+      TextField(
+        controller: _rut,
         decoration: InputDecoration(
           labelText: 'RUT (Sin puntos y con guión)',
           border: OutlineInputBorder(),
         ),
       ),
       const SizedBox(height: 20),
-      const TextField(
+      TextField(
+        controller: _correo,
         decoration: InputDecoration(
           labelText: 'Correo Electrónico',
           border: OutlineInputBorder(),
@@ -169,8 +194,12 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       ),
       const SizedBox(height: 20),
       DropdownButtonFormField<String>(
-        value: 'Chile',
-        onChanged: (value) {},
+        value: _nacionalidad,
+        onChanged: (value) {
+          setState(() {
+            _nacionalidad = value!;
+          });
+        },
         items: const [
           DropdownMenuItem(value: 'Chile', child: Text('Chile')),
           DropdownMenuItem(value: 'Argentina', child: Text('Argentina')),
@@ -182,8 +211,12 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       ),
       const SizedBox(height: 20),
       DropdownButtonFormField<String>(
-        value: 'Fonasa',
-        onChanged: (value) {},
+        value: _salud,
+        onChanged: (value) {
+          setState(() {
+            _salud = value!;
+          });
+        },
         items: const [
           DropdownMenuItem(value: 'Fonasa', child: Text('Fonasa')),
           DropdownMenuItem(value: 'Isapre', child: Text('Isapre')),
@@ -195,8 +228,12 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       ),
       const SizedBox(height: 20),
       DropdownButtonFormField<String>(
-        value: 'ProVida',
-        onChanged: (value) {},
+        value: _afp,
+        onChanged: (value) {
+          setState(() {
+            _afp = value!;
+          });
+        },
         items: const [
           DropdownMenuItem(value: 'ProVida', child: Text('ProVida')),
           DropdownMenuItem(value: 'Modelo', child: Text('Modelo')),
@@ -234,7 +271,7 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       ),
       const SizedBox(height: 20),
       TextField(
-        controller: _dateController2,
+        controller: _dateControllerini,
         decoration: const InputDecoration(
           labelText: 'Fecha Inicio Contrato',
           border: OutlineInputBorder(),
@@ -249,13 +286,13 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
           );
           if (date != null) {
             String formattedDate = '${date.day}/${date.month}/${date.year}';
-            _dateController2.text = formattedDate;
+            _dateControllerini.text = formattedDate;
           }
         },
       ),
       const SizedBox(height: 20),
       TextField(
-        controller: _dateController3,
+        controller: _dateControllerfina,
         decoration: const InputDecoration(
           labelText: 'Fecha Finalización Contrato',
           border: OutlineInputBorder(),
@@ -270,7 +307,7 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
           );
           if (date != null) {
             String formattedDate = '${date.day}/${date.month}/${date.year}';
-            _dateController3.text = formattedDate;
+            _dateControllerfina.text = formattedDate;
           }
         },
       ),
@@ -282,8 +319,8 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
         child: const Text('Sueldo'),
       ),
       const SizedBox(height: 20),
-      const SizedBox(height: 20),
-      const TextField(
+      TextField(
+        controller: _direcciont,
         decoration: InputDecoration(
           labelText: 'Dirección de Trabajo',
           border: OutlineInputBorder(),
@@ -306,13 +343,20 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       const SizedBox(height: 40),
       ElevatedButton(
         onPressed: _isChecked
-            ? () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ContractScreen()),
-                );
-              }
+            ? generarPdf(
+                _nombres.text,
+                _apellidos.text,
+                _direccion.text,
+                _civil,
+                _dateControllernaci.text,
+                _rut.text,
+                _correo.text,
+                _nacionalidad,
+                _salud,
+                _afp,
+                _dateControllerini.text,
+                _dateControllerfina.text,
+                _direcciont.text)
             : null,
         style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 50)),
