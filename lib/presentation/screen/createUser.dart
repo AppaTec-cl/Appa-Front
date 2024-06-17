@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class UserFormScreen extends StatefulWidget {
   @override
@@ -6,6 +8,11 @@ class UserFormScreen extends StatefulWidget {
 }
 
 class _UserFormScreenState extends State<UserFormScreen> {
+  bool validateRut(String rut) {
+    RegExp regExp = RegExp(r'^\d{8}-\d{1}$');
+    return regExp.hasMatch(rut);
+  }
+
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _rutController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
@@ -85,10 +92,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
                 child: Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Aquí se pueden añadir acciones como validar el formulario o guardar los datos
-                      if (_formKey.currentState!.validate()) {
-                        print('Generando usuario...');
-                      }
+                      _onSubmit();
                     },
                     child: Text('Generar Usuario'),
                   ),
@@ -99,5 +103,30 @@ class _UserFormScreenState extends State<UserFormScreen> {
         ),
       ),
     );
+  }
+
+  void _onSubmit() {
+    if (_formKey.currentState!.validate() && validateRut(_rutController.text)) {
+      String jsonData = jsonEncode({
+        'rut': _rutController.text,
+        'firstName': _firstNameController.text,
+        'lastNameP': _lastNamePController.text,
+        'lastNameM': _lastNameMController.text,
+        'email': _emailController.text,
+        'role': _selectedRole,
+        'password': _passwordController.text,
+      });
+      UserAPI.sendUserData(jsonData);
+    }
+  }
+}
+
+class UserAPI {
+  static Future<void> sendUserData(String jsonData) async {
+    var url = Uri.parse('http://127.0.0.1:5000/submit_form');
+    var response = await http.post(url,
+        body: jsonData, headers: {'Content-Type': 'application/json'});
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
   }
 }
