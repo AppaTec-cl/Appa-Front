@@ -60,7 +60,6 @@ class _ContractWorkerPageState extends State<ContractWorkerPage>
           );
         }
       } catch (e) {
-        print('Error al guardar el archivo: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error al guardar el archivo')),
         );

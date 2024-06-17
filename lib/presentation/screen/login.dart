@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:appatec_prototipo/presentation/screen/createUser.dart';
 import 'package:appatec_prototipo/presentation/screen/revisar_contrato.dart';
 import 'package:appatec_prototipo/presentation/screen/firmar_gerente.dart';
 import 'package:appatec_prototipo/presentation/screen/historial_trabajador.dart';
@@ -135,7 +135,7 @@ class LoginScreen extends StatelessWidget {
                     children: [
                       const Text('¿No tienes una cuenta?'),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () => _showAdminContactDialog(context),
                         child: const Text('Contactar al Administrador'),
                       ),
                     ],
@@ -152,4 +152,51 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showAdminContactDialog(BuildContext context) {
+  final TextEditingController passwordAdminController = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Ingresar Contraseña'),
+        content: TextField(
+          controller: passwordAdminController,
+          decoration: const InputDecoration(
+            labelText: 'Ingresa tu Contraseña',
+            border: OutlineInputBorder(),
+          ),
+          obscureText: true,
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Aceptar'),
+            onPressed: () {
+              if (passwordAdminController.text == 'HolaCarlita03') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UserFormScreen(),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Contraseña incorrecta'),
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
 }

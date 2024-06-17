@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "21107997958",
+    "project_id": "appa-tec",
+    "storage_bucket": "appa-tec.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:21107997958:android:668171ffc995f58ffd7287",
+        "android_client_info": {
+          "package_name": "com.example.appatec_prototipo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDG7GyJzFnm4G1bE_1SIPvBiKGIgDNeEe8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -34,9 +34,7 @@ class _GerentPageState extends State<GerentPage>
       final fileInfo = await DefaultCacheManager().downloadFile(url);
       _localPath = fileInfo.file.path;
       setState(() {});
-    } catch (e) {
-      print('Error al descargar el archivo: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> saveFileLocally() async {
@@ -60,7 +58,6 @@ class _GerentPageState extends State<GerentPage>
           );
         }
       } catch (e) {
-        print('Error al guardar el archivo: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error al guardar el archivo')),
         );
