@@ -17,7 +17,9 @@ generarPdf(
         finalizacion,
         sueldoBase,
         colacion,
-        bonoAsistencia) =>
+        bonoAsistencia,
+        nEmpleador,
+        rEmpleador) =>
     () async {
       final pdf = pw.Document();
 
@@ -39,7 +41,7 @@ generarPdf(
                   ),
                   pw.Text(
                       'En Calama, a $inicio, entre la empresa World Survey Services S.A. (WSS), Rut. 96.947.280-5, '
-                      'representado para estos efectos por don RODRIGO HERNAN ESPINOZA ASTORGA, Cédula de Identidad Nro. 14.286.378-2, '
+                      'representado para estos efectos por don $nEmpleador, Cédula de Identidad Nro. $rEmpleador, '
                       'nacionalidad CHILENO ambos domiciliados en la calle José Ananías N° 651, Macul, Ciudad de Santiago, Región Metropolitana, '
                       'y otra parte don/ña $nombres $apellidos, Cédula de Identidad Nro. $rut nacionalidad $nacionalidad, nacido el $nacimiento estado civil '
                       '$civil con domicilio en $direccion, Ciudad de CALAMA, ANTOFAGASTA, correo electrónico $correo se conviene el siguiente contrato de trabajo, '
@@ -127,13 +129,13 @@ generarPdf(
                     ),
                   ),
                   pw.Bullet(
-                    text: 'No debe tener días de atraso.\n\n\n\n\n\n\n',
+                    text: 'No debe tener días de atraso. \n',
                     style: const pw.TextStyle(fontSize: 11),
                     bulletShape: pw.BoxShape.circle, // Para un círculo sólido
                     bulletSize:
                         7, // Tamaño de la viñetaPersonaliza la viñeta si es necesario
                   ),
-                  pw.Text('FORMA DE PAGO: \n',
+                  pw.Text('\n\n\n\n\n\nFORMA DE PAGO: \n',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 11)),
                   pw.Text(

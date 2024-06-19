@@ -27,6 +27,8 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
   final TextEditingController _sueldoBase = TextEditingController();
   final TextEditingController _colacion = TextEditingController();
   final TextEditingController _bonoAsistencia = TextEditingController();
+  final TextEditingController _nEmpleador = TextEditingController();
+  final TextEditingController _rEmpleador = TextEditingController();
 
   bool _isChecked = false;
 
@@ -244,6 +246,13 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
           border: OutlineInputBorder(),
         ),
       ),
+      const SizedBox(height: 20),
+      ElevatedButton(
+        onPressed: () => _employerData(context),
+        style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 50)),
+        child: const Text('Datos del Empleador'),
+      ),
     ];
   }
 
@@ -332,7 +341,7 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
               });
             },
           ),
-          const Expanded(child: Text('Acepto los términos y condiciones')),
+          const Expanded(child: Text('He revisado y confirmo los datos')),
         ],
       ),
       const SizedBox(height: 40),
@@ -354,7 +363,8 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
                 _sueldoBase.text,
                 _colacion.text,
                 _bonoAsistencia.text,
-              )
+                _nEmpleador.text,
+                _rEmpleador.text)
             : null,
         style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 50)),
@@ -429,6 +439,56 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
                 controller: _bonoAsistencia,
                 decoration: InputDecoration(
                   labelText: 'Bono de Asistencia',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            SimpleDialogOption(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancelar'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Guardar'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _employerData(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('Detalles del Empleador'),
+          children: <Widget>[
+            SimpleDialogOption(
+              child: TextField(
+                controller: _nEmpleador,
+                decoration: InputDecoration(
+                  labelText: 'Nombre Empleador',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            SimpleDialogOption(
+              child: TextField(
+                controller: _rEmpleador,
+                decoration: InputDecoration(
+                  labelText: 'RUT Empleador',
                   border: OutlineInputBorder(),
                 ),
               ),

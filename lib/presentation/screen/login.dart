@@ -109,9 +109,11 @@ class LoginScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text('¿No tienes una cuenta?'),
-                      TextButton(
-                        onPressed: () => _showAdminContactDialog(context),
-                        child: const Text('Ingresar Como Administrador'),
+                      Flexible(
+                        child: TextButton(
+                          onPressed: () => _showAdminContactDialog(context),
+                          child: const Text('Crear Cuenta'),
+                        ),
                       ),
                     ],
                   ),
@@ -128,6 +130,8 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+
+List password = ['Bmc1201*', 'Cyphound2257!', 'Rosut0', 'rhj1202@'];
 
 void _showAdminContactDialog(BuildContext context) {
   final TextEditingController passwordAdminController = TextEditingController();
@@ -154,7 +158,10 @@ void _showAdminContactDialog(BuildContext context) {
           TextButton(
             child: const Text('Aceptar'),
             onPressed: () {
-              if (passwordAdminController.text == 'HolaCarlita03') {
+              if (passwordAdminController.text == password[0] ||
+                  passwordAdminController.text == password[1] ||
+                  passwordAdminController.text == password[2] ||
+                  passwordAdminController.text == password[3]) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
