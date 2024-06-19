@@ -109,11 +109,11 @@ class _UserFormScreenState extends State<UserFormScreen> {
     if (_formKey.currentState!.validate() && validateRut(_rutController.text)) {
       String jsonData = jsonEncode({
         'rut': _rutController.text,
-        'firstName': _firstNameController.text,
-        'lastNameP': _lastNamePController.text,
-        'lastNameM': _lastNameMController.text,
-        'email': _emailController.text,
-        'role': _selectedRole,
+        'nombres': _firstNameController.text,
+        'apellido_p': _lastNamePController.text,
+        'apellido_m': _lastNameMController.text,
+        'correo_electronico': _emailController.text,
+        'rol': _selectedRole,
         'password': _passwordController.text,
       });
       UserAPI.sendUserData(jsonData);

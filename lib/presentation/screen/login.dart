@@ -6,6 +6,9 @@ import 'package:appatec_prototipo/presentation/screen/historial_trabajador.dart'
 import 'package:appatec_prototipo/presentation/screen/inicio_jefe.dart';
 import 'package:appatec_prototipo/presentation/theme_switcher.dart';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 class LoginScreen extends StatelessWidget {
   final Function toggleTheme;
   final bool isDarkMode;
@@ -88,40 +91,12 @@ class LoginScreen extends StatelessWidget {
                     onPressed: () {
                       String loginId = loginController.text;
                       String password = passwordController.text;
-                      if (loginId == '1111' && password.isNotEmpty) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => InicioJefe(),
-                          ),
-                        );
-                      } else if (loginId == '2222' && password.isNotEmpty) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ContractReviewPage(),
-                          ),
-                        );
-                      } else if (loginId == '3333' && password.isNotEmpty) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => GerentPage(),
-                          ),
-                        );
-                      } else if (loginId.isNotEmpty && password.isEmpty) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ContractWorkerPage(),
-                          ),
-                        );
+                      if (loginId.isNotEmpty && password.isNotEmpty) {
+                        loginUser(loginId, password, context);
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Usuario o contraseña incorrectos'),
-                          ),
-                        );
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            content: Text(
+                                'Por favor ingrese ambos, usuario y contraseña')));
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -136,7 +111,7 @@ class LoginScreen extends StatelessWidget {
                       const Text('¿No tienes una cuenta?'),
                       TextButton(
                         onPressed: () => _showAdminContactDialog(context),
-                        child: const Text('Contactar al Administrador'),
+                        child: const Text('Ingresar Como Administrador'),
                       ),
                     ],
                   ),
@@ -199,4 +174,44 @@ void _showAdminContactDialog(BuildContext context) {
       );
     },
   );
+}
+
+Future<void> loginUser(
+    String rut, String password, BuildContext context) async {
+  final response = await http.post(
+    Uri.parse('http://127.0.0.1:5000/login'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, String>{
+      'rut': rut,
+      'password': password,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    var data = jsonDecode(response.body);
+    var role = data['rol'];
+    switch (role) {
+      case 'Jefe de Recursos Humanos':
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => InicioJefe()));
+        break;
+      case 'Gerente':
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => ContractReviewPage()));
+        break;
+      case 'Gerente General':
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => GerentPage()));
+        break;
+      default:
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => ContractWorkerPage()));
+        break;
+    }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Usuario o contraseña incorrectos')));
+  }
 }
