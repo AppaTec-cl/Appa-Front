@@ -143,6 +143,8 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
         items: const [
           DropdownMenuItem(value: 'Soltero', child: Text('Soltero')),
           DropdownMenuItem(value: 'Casado', child: Text('Casado')),
+          DropdownMenuItem(value: 'Divorciado', child: Text('Divorciado')),
+          DropdownMenuItem(value: 'Viudo', child: Text('Viudo')),
         ],
         decoration: const InputDecoration(
           labelText: 'Estado Civil',
@@ -182,7 +184,7 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       const SizedBox(height: 20),
       TextField(
         controller: _rut,
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           labelText: 'RUT (Sin puntos y con guión)',
           border: OutlineInputBorder(),
         ),
@@ -190,7 +192,7 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       const SizedBox(height: 20),
       TextField(
         controller: _correo,
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           labelText: 'Correo Electrónico',
           border: OutlineInputBorder(),
         ),
@@ -206,6 +208,11 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
         items: const [
           DropdownMenuItem(value: 'Chile', child: Text('Chile')),
           DropdownMenuItem(value: 'Argentina', child: Text('Argentina')),
+          DropdownMenuItem(value: 'Bolivia', child: Text('Bolivia')),
+          DropdownMenuItem(value: 'Perú', child: Text('Perú')),
+          DropdownMenuItem(value: 'Venezuela', child: Text('Venezuela')),
+          DropdownMenuItem(value: 'Colombia', child: Text('Colombia')),
+          DropdownMenuItem(value: 'Camerún', child: Text('Camerún')),
         ],
         decoration: const InputDecoration(
           labelText: 'Nacionalidad',
@@ -238,8 +245,13 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
           });
         },
         items: const [
-          DropdownMenuItem(value: 'ProVida', child: Text('ProVida')),
-          DropdownMenuItem(value: 'Modelo', child: Text('Modelo')),
+          DropdownMenuItem(value: 'ProVida', child: Text('AFP ProVida')),
+          DropdownMenuItem(value: 'Modelo', child: Text('AFP Modelo')),
+          DropdownMenuItem(value: 'Capital', child: Text('AFP Capital')),
+          DropdownMenuItem(value: 'Cuprum', child: Text('AFP Cuprum')),
+          DropdownMenuItem(value: 'Planvital', child: Text('AFP Planvital')),
+          DropdownMenuItem(value: 'Habitat', child: Text('AFP Habitat')),
+          DropdownMenuItem(value: 'Uno', child: Text('AFP Uno'))
         ],
         decoration: const InputDecoration(
           labelText: 'Previsión AFP',

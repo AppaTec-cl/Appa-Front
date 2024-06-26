@@ -376,7 +376,7 @@ generarPdf(
       );
       // Save the document to a file
       final String dir = (await getDownloadsDirectory())?.path ?? '';
-      final String path = '$dir/contrato.pdf';
+      final String path = '$dir/contrato_$nombres.pdf';
       final File file = File(path);
       await file.writeAsBytes(await pdf.save());
     };

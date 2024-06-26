@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:file_saver/file_saver.dart';
+import 'package:intl/intl.dart';
 
 class ContractReviewPage extends StatefulWidget {
   const ContractReviewPage({super.key});
@@ -18,6 +19,7 @@ class _ContractReviewPageState extends State<ContractReviewPage>
   String? _localPath;
 
   late int randomNumber;
+  final TextEditingController _dateController = TextEditingController();
 
   @override
   void initState() {
@@ -78,6 +80,7 @@ class _ContractReviewPageState extends State<ContractReviewPage>
         title: const Text('Revisar Contrato - Gerente'),
       ),
       body: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           Expanded(
             flex: 2,
@@ -89,6 +92,42 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                     Tab(text: 'Pendientes'),
                     Tab(text: 'Revisados'),
                   ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Buscar contrato',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8.0),
+                      Container(
+                        height: 47,
+                        child: ElevatedButton(
+                          onPressed: () => _showFilterDialog(context),
+                          child: Icon(Icons.filter_list), // Icono de filtro
+                          style: ElevatedButton.styleFrom(
+                            // Color del botón
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  8.0), // Bordes redondeados
+                            ),
+                            padding: EdgeInsets.symmetric(
+                                vertical:
+                                    15), // Padding vertical para aumentar la altura del botón
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 Expanded(
                     child: TabBarView(
@@ -195,6 +234,90 @@ class _ContractReviewPageState extends State<ContractReviewPage>
           ),
         ],
       ),
+    );
+  }
+
+  void _showFilterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Filtrar Contratos'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'RUT (Sin puntos y con guión)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                DropdownButtonFormField<String>(
+                  value: 'Elige Tipo',
+                  onChanged: (value) {},
+                  items: const [
+                    DropdownMenuItem(
+                        value: 'Elige Tipo', child: Text('Elige Tipo')),
+                    DropdownMenuItem(
+                        value: 'Analista Quimico',
+                        child: Text('Analista Quimico')),
+                    DropdownMenuItem(
+                        value: 'Auxiliar de Laboratorio',
+                        child: Text('Auxiliar de Laboratorio')),
+                    DropdownMenuItem(
+                        value: 'Tecnico Quimico',
+                        child: Text('Tecnico Quimico')),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'Tipo de Cargo',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _dateController,
+                  decoration: const InputDecoration(
+                    labelText: 'Fecha',
+                    border: OutlineInputBorder(),
+                  ),
+                  readOnly: true,
+                  onTap: () async {
+                    DateTime? date = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                    );
+                    if (date != null) {
+                      // Usar DateFormat de intl para formatear la fecha
+                      String formattedDate =
+                          DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES')
+                              .format(date);
+                      _dateController.text = formattedDate;
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Aplicar Filtros'),
+              onPressed: () {
+                // Implementa la lógica para aplicar los filtros aquí
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
