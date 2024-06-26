@@ -101,7 +101,7 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                         child: TextField(
                           decoration: InputDecoration(
                             hintText: 'Buscar contrato',
-                            prefixIcon: Icon(Icons.search),
+                            prefixIcon: const Icon(Icons.search),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
@@ -120,7 +120,7 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                               borderRadius: BorderRadius.circular(
                                   8.0), // Bordes redondeados
                             ),
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 vertical:
                                     15), // Padding vertical para aumentar la altura del botón
                           ),
@@ -242,7 +242,7 @@ class _ContractReviewPageState extends State<ContractReviewPage>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Filtrar Contratos'),
+          title: const Text('Filtrar Contratos'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[

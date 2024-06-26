@@ -4,7 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
   initializeDateFormatting('es_ES', null).then((_) {
-    runApp(MyApp());
+    runApp(const MyApp());
   });
 }
 

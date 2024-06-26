@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:appatec_prototipo/presentation/screen/generar_contrato.dart';
-import 'package:appatec_prototipo/presentation/screen/contract_messages.dart';
-import 'package:appatec_prototipo/presentation/screen/anex.dart';
+import 'package:appatec_prototipo/presentation/screen/mensajes_contratos.dart';
+import 'package:appatec_prototipo/presentation/screen/anexo.dart';
 
 class InicioJefe extends StatelessWidget {
   @override

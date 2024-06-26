@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:appatec_prototipo/presentation/screen/contrato_generado.dart';
 import 'package:appatec_prototipo/generate/plantilla.dart';
 import 'package:intl/intl.dart';
 
