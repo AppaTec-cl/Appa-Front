@@ -5,6 +5,7 @@ import 'package:appatec_prototipo/presentation/screen/firmar_gerente.dart';
 import 'package:appatec_prototipo/presentation/screen/historial_trabajador.dart';
 import 'package:appatec_prototipo/presentation/screen/inicio_jefe.dart';
 import 'package:appatec_prototipo/presentation/theme_switcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -199,6 +200,15 @@ Future<void> loginUser(
   if (response.statusCode == 200) {
     var data = jsonDecode(response.body);
     var role = data['rol'];
+    var name = data['nombre'];
+    var userId = data['id_usuario'];
+
+    // Almacenamiento de los datos de sesión
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userRole', role);
+    await prefs.setString('userName', name);
+    await prefs.setString('userId', userId);
+
     switch (role) {
       case 'Jefe de Recursos Humanos':
         Navigator.push(

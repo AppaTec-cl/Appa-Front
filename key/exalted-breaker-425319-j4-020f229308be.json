@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "exalted-breaker-425319-j4",
+  "private_key_id": "020f229308beabb17ac1a595ebb6bd4dd82eb1b2",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDOTvmvDUV0HH+N\nJcBRInHTG0cc12Av8qrhCHxFs/sQv3WEVwWiwtZSls+lP3U9XVBE3tbTfHaZZWsl\n2/Fnhg1VgG9pYZZ8NV5MASSwsCbulg2azOZq3bu5p8J06IEI6c8R/myVsrlLYSpK\nwrAcVH82d9gDwXk9G+XAZODrEWW5YnLZgKh160GcgFT43I/ZPX7ucVrwHYlWge7Q\nEAVVKCGIr7jnv6XRfIUzDhOdoHuMWjynFir7MToOuK+BxwRhs9wozhz3Z6VHJOG4\n5144wunO2GJIQZwx9FGQFsVlO+b4dX4CKwFlAYwwmiqQiK3VuQoCFgmCtcw/hPOk\n40vlKcOVAgMBAAECggEAAuUp4jp43bz2+gxotsAZk8QVwkCa8QlQZjCLi3czYBJR\n+mTSWUlL2A8HWY+BxuC01CMJbOeg4BzR7wgMtaA7mkgKC8TY9bIZekAvFDYELkse\nubM1lOllgtKMqz3UmRFXIEQLrxtWVGYriJJvzMAzJHxmARAnwG3steMror/4Y9cs\nMls4IG5LXM69ODWLhk3/yLJDOjIVMmXZcbBGChn1KBTaqNGxMwdohzWGlnlm31JE\n1GZCp661h6BsEV78NZOhnJFUcGFFr/+f9QNYxien3uP0jOhxTkk6Hg4Hv778hijc\nnb4WgMZrSnimqrbx2jHNs9zLhMlqnb9U5XVq7yQyGQKBgQDobIK+k9m8tG+f3VKu\nrqYsyEz4ae60T9kjYcYIK2TWRWxf0/nz0cpbFqB4eljKQOvgaJ5MX/6bGiQOIqio\ngQKXs7zo6Gfj8hEfLD3P7x2dkHakua3T+BVAWiat4kfXDXt3mMgHfOgY+gRnqSeq\nfPoTBYabGLM6o5rbPsScP+SgKQKBgQDjPE+nWIWicgfWx46P3ATtw3/SbRNj33/K\nDTri+oVbsK8SvqsZhfqs071fQsx4nF6RcKG/HzDEnBfT2YhrioJX6OrJ6qlapyCv\nT/tVwCSrFGgY4SJZB6SEJXNh3vX/ULFEYsXmryy1KMqv9YVN2EAQdrwf50eC7Ts3\n7zTeRM7FjQKBgQCLqpkumH4hTXQ+ZqsG2WB2TK8kH9QXelwLTPfJdPoVYIZtV14+\nS/UDo6cufqbYcwbLRVLKpmzDG4RLEjyzdULvkkyU0QONEKuFRfqm9xOe2W7SMdnp\nJIzwrLvNhcqRykJFbgPVrBN03tjCyf1SD+PehlWK4d7h/+pQkXloQ2TJcQKBgE4/\nC1Kdmc6ZI3fi2YVSBuR0iERGSQIACPnjWl6kU12CVpbGzxYH24y9kJ0H3G6/sZS1\nSw0LyXg6I75QTrhxRnbM/mQvCMftesTDbtFVS4sZiMrgYzpy9kSGvNd7tguHlrLs\nrCbGNUfgVwMGMTPf/hdtO1RlCGveEqEtHnBXEzhVAoGABgBZqGpk+2252TWeyF2v\n4Gsth3WG0oTEriBBZLr9zBjkZ8XMgbKytDjUfGe2fQXmo1Zs82W36MfZF6UnCipp\nPpky+f5nuvsqnBHUhCrSYMCoMzqyn5C3F1ywPT2SJ1SM/MN1t3aGBAqRuGhr5lHo\nMTdP765T6ml5yFnC0mH5OYA=\n-----END PRIVATE KEY-----\n",
+  "client_email": "appatec-227@exalted-breaker-425319-j4.iam.gserviceaccount.com",
+  "client_id": "102152482042698256563",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/appatec-227%40exalted-breaker-425319-j4.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

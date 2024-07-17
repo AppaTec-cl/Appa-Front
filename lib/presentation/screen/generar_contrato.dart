@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:appatec_prototipo/generate/plantilla.dart';
+import 'package:appatec_prototipo/generate/plantilla_analista_quimico.dart';
+import 'package:appatec_prototipo/generate/plantilla_auxiliar_laboratorio.dart';
 import 'package:intl/intl.dart';
 
 class GenerateContractScreen extends StatefulWidget {
@@ -13,8 +14,11 @@ String _civil = 'Soltero';
 String _nacionalidad = 'Chile';
 String _salud = 'Fonasa';
 String _afp = 'ProVida';
+String _tipoC = 'Elige Tipo';
 
 class _GenerateContractScreenState extends State<GenerateContractScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _salaryKey = GlobalKey<FormState>();
   final TextEditingController _dateControllernaci = TextEditingController();
   final TextEditingController _dateControllerini = TextEditingController();
   final TextEditingController _dateControllerfina = TextEditingController();
@@ -49,56 +53,68 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Row(
-        children: [
-          // First column: Personal details
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: _buildPersonalDetails(context),
+      body: Form(
+        key: _formKey,
+        child: Row(
+          children: [
+            // First column: Personal details
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: SingleChildScrollView(
+                    child: FocusTraversalGroup(
+                      policy: OrderedTraversalPolicy(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: _buildPersonalDetails(context),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          const VerticalDivider(width: 1),
-          // Second column: Labor information
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: _buildWorkDetails(),
+            const VerticalDivider(width: 1),
+            // Second column: Labor information
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: SingleChildScrollView(
+                    child: FocusTraversalGroup(
+                      policy: OrderedTraversalPolicy(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: _buildWorkDetails(),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          const VerticalDivider(width: 1),
-          // Third column: Contract details
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: _buildContractDetails(context),
+            const VerticalDivider(width: 1),
+            // Third column: Contract details
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: SingleChildScrollView(
+                    child: FocusTraversalGroup(
+                      policy: OrderedTraversalPolicy(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: _buildContractDetails(context),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -108,70 +124,104 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       const Text('Datos Personales',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
       const SizedBox(height: 20),
-      TextField(
-        controller: _nombres,
-        decoration: const InputDecoration(
-          labelText: 'Nombres',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(1),
+        child: TextFormField(
+          controller: _nombres,
+          decoration: const InputDecoration(
+            labelText: 'Nombres',
+            border: OutlineInputBorder(),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Por favor, ingrese nombres';
+            }
+            return null;
+          },
         ),
       ),
       const SizedBox(height: 20),
-      TextField(
-        controller: _apellidos,
-        decoration: InputDecoration(
-          labelText: 'Apellidos',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(2),
+        child: TextFormField(
+          controller: _apellidos,
+          decoration: InputDecoration(
+            labelText: 'Apellidos',
+            border: OutlineInputBorder(),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Por favor, ingrese apellidos';
+            }
+            return null;
+          },
         ),
       ),
       const SizedBox(height: 20),
-      TextField(
-        controller: _direccion,
-        decoration: InputDecoration(
-          labelText: 'Dirección Completa',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(3),
+        child: TextFormField(
+          controller: _direccion,
+          decoration: InputDecoration(
+            labelText: 'Dirección Completa',
+            border: OutlineInputBorder(),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Por favor, ingrese dirección';
+            }
+            return null;
+          },
         ),
       ),
       const SizedBox(height: 20),
-      DropdownButtonFormField<String>(
-        value: _civil,
-        onChanged: (value) {
-          setState(() {
-            _civil = value!;
-          });
-        },
-        items: const [
-          DropdownMenuItem(value: 'Soltero', child: Text('Soltero')),
-          DropdownMenuItem(value: 'Casado', child: Text('Casado')),
-          DropdownMenuItem(value: 'Divorciado', child: Text('Divorciado')),
-          DropdownMenuItem(value: 'Viudo', child: Text('Viudo')),
-        ],
-        decoration: const InputDecoration(
-          labelText: 'Estado Civil',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(4),
+        child: DropdownButtonFormField<String>(
+          value: _civil,
+          onChanged: (value) {
+            setState(() {
+              _civil = value!;
+            });
+          },
+          items: const [
+            DropdownMenuItem(value: 'Soltero', child: Text('Soltero')),
+            DropdownMenuItem(value: 'Casado', child: Text('Casado')),
+            DropdownMenuItem(value: 'Divorciado', child: Text('Divorciado')),
+            DropdownMenuItem(value: 'Viudo', child: Text('Viudo')),
+          ],
+          decoration: const InputDecoration(
+            labelText: 'Estado Civil',
+            border: OutlineInputBorder(),
+          ),
         ),
       ),
       const SizedBox(height: 20),
-      TextField(
-        controller: _dateControllernaci,
-        decoration: const InputDecoration(
-          labelText: 'Fecha de Nacimiento',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(5),
+        child: TextFormField(
+          controller: _dateControllernaci,
+          decoration: const InputDecoration(
+            labelText: 'Fecha de Nacimiento',
+            border: OutlineInputBorder(),
+          ),
+          readOnly: true,
+          onTap: () async {
+            DateTime? date = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(1900),
+              lastDate: DateTime.now(),
+            );
+            if (date != null) {
+              // Usar DateFormat de intl para formatear la fecha
+              String formattedDate =
+                  DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES')
+                      .format(date);
+              _dateControllernaci.text = formattedDate;
+            }
+          },
         ),
-        readOnly: true,
-        onTap: () async {
-          DateTime? date = await showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime(1900),
-            lastDate: DateTime.now(),
-          );
-          if (date != null) {
-            // Usar DateFormat de intl para formatear la fecha
-            String formattedDate =
-                DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES').format(date);
-            _dateControllernaci.text = formattedDate;
-          }
-        },
       ),
     ];
   }
@@ -181,80 +231,97 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       const Text('Información Laboral',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
       const SizedBox(height: 20),
-      TextField(
-        controller: _rut,
-        decoration: const InputDecoration(
-          labelText: 'RUT (Sin puntos y con guión)',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(1),
+        child: TextFormField(
+          controller: _rut,
+          decoration: const InputDecoration(
+            labelText: 'RUT (Sin puntos y con guión)',
+            border: OutlineInputBorder(),
+          ),
+          validator: validateRUT, // Usa el validador de RUT aquí
         ),
       ),
       const SizedBox(height: 20),
-      TextField(
-        controller: _correo,
-        decoration: const InputDecoration(
-          labelText: 'Correo Electrónico',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(2),
+        child: TextFormField(
+          controller: _correo,
+          decoration: const InputDecoration(
+            labelText: 'Correo Electrónico',
+            border: OutlineInputBorder(),
+          ),
+          validator: validateEmail, // Usa el validador de email aquí
         ),
       ),
       const SizedBox(height: 20),
-      DropdownButtonFormField<String>(
-        value: _nacionalidad,
-        onChanged: (value) {
-          setState(() {
-            _nacionalidad = value!;
-          });
-        },
-        items: const [
-          DropdownMenuItem(value: 'Chile', child: Text('Chile')),
-          DropdownMenuItem(value: 'Argentina', child: Text('Argentina')),
-          DropdownMenuItem(value: 'Bolivia', child: Text('Bolivia')),
-          DropdownMenuItem(value: 'Perú', child: Text('Perú')),
-          DropdownMenuItem(value: 'Venezuela', child: Text('Venezuela')),
-          DropdownMenuItem(value: 'Colombia', child: Text('Colombia')),
-          DropdownMenuItem(value: 'Camerún', child: Text('Camerún')),
-        ],
-        decoration: const InputDecoration(
-          labelText: 'Nacionalidad',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(3),
+        child: DropdownButtonFormField<String>(
+          value: _nacionalidad,
+          onChanged: (value) {
+            setState(() {
+              _nacionalidad = value!;
+            });
+          },
+          items: const [
+            DropdownMenuItem(value: 'Chile', child: Text('Chile')),
+            DropdownMenuItem(value: 'Argentina', child: Text('Argentina')),
+            DropdownMenuItem(value: 'Bolivia', child: Text('Bolivia')),
+            DropdownMenuItem(value: 'Perú', child: Text('Perú')),
+            DropdownMenuItem(value: 'Venezuela', child: Text('Venezuela')),
+            DropdownMenuItem(value: 'Colombia', child: Text('Colombia')),
+            DropdownMenuItem(value: 'Camerún', child: Text('Camerún')),
+          ],
+          decoration: const InputDecoration(
+            labelText: 'Nacionalidad',
+            border: OutlineInputBorder(),
+          ),
         ),
       ),
       const SizedBox(height: 20),
-      DropdownButtonFormField<String>(
-        value: _salud,
-        onChanged: (value) {
-          setState(() {
-            _salud = value!;
-          });
-        },
-        items: const [
-          DropdownMenuItem(value: 'Fonasa', child: Text('Fonasa')),
-          DropdownMenuItem(value: 'Isapre', child: Text('Isapre')),
-        ],
-        decoration: const InputDecoration(
-          labelText: 'Sistema de Salud',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(4),
+        child: DropdownButtonFormField<String>(
+          value: _salud,
+          onChanged: (value) {
+            setState(() {
+              _salud = value!;
+            });
+          },
+          items: const [
+            DropdownMenuItem(value: 'Fonasa', child: Text('Fonasa')),
+            DropdownMenuItem(value: 'Isapre', child: Text('Isapre')),
+          ],
+          decoration: const InputDecoration(
+            labelText: 'Sistema de Salud',
+            border: OutlineInputBorder(),
+          ),
         ),
       ),
       const SizedBox(height: 20),
-      DropdownButtonFormField<String>(
-        value: _afp,
-        onChanged: (value) {
-          setState(() {
-            _afp = value!;
-          });
-        },
-        items: const [
-          DropdownMenuItem(value: 'ProVida', child: Text('AFP ProVida')),
-          DropdownMenuItem(value: 'Modelo', child: Text('AFP Modelo')),
-          DropdownMenuItem(value: 'Capital', child: Text('AFP Capital')),
-          DropdownMenuItem(value: 'Cuprum', child: Text('AFP Cuprum')),
-          DropdownMenuItem(value: 'Planvital', child: Text('AFP Planvital')),
-          DropdownMenuItem(value: 'Habitat', child: Text('AFP Habitat')),
-          DropdownMenuItem(value: 'Uno', child: Text('AFP Uno'))
-        ],
-        decoration: const InputDecoration(
-          labelText: 'Previsión AFP',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(5),
+        child: DropdownButtonFormField<String>(
+          value: _afp,
+          onChanged: (value) {
+            setState(() {
+              _afp = value!;
+            });
+          },
+          items: const [
+            DropdownMenuItem(value: 'ProVida', child: Text('AFP ProVida')),
+            DropdownMenuItem(value: 'Modelo', child: Text('AFP Modelo')),
+            DropdownMenuItem(value: 'Capital', child: Text('AFP Capital')),
+            DropdownMenuItem(value: 'Cuprum', child: Text('AFP Cuprum')),
+            DropdownMenuItem(value: 'Planvital', child: Text('AFP Planvital')),
+            DropdownMenuItem(value: 'Habitat', child: Text('AFP Habitat')),
+            DropdownMenuItem(value: 'Uno', child: Text('AFP Uno'))
+          ],
+          decoration: const InputDecoration(
+            labelText: 'Previsión AFP',
+            border: OutlineInputBorder(),
+          ),
         ),
       ),
       const SizedBox(height: 20),
@@ -272,67 +339,82 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       const Text('Detalles del Contrato',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
       const SizedBox(height: 20),
-      DropdownButtonFormField<String>(
-        value: 'Elige Tipo',
-        onChanged: (value) {},
-        items: const [
-          DropdownMenuItem(value: 'Elige Tipo', child: Text('Elige Tipo')),
-          DropdownMenuItem(
-              value: 'Analista Quimico', child: Text('Analista Quimico')),
-          DropdownMenuItem(
-              value: 'Auxiliar de Laboratorio',
-              child: Text('Auxiliar de Laboratorio')),
-          DropdownMenuItem(
-              value: 'Tecnico Quimico', child: Text('Tecnico Quimico')),
-        ],
-        decoration: const InputDecoration(
-          labelText: 'Tipo de Cargo',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(1),
+        child: DropdownButtonFormField<String>(
+          value: _tipoC,
+          onChanged: (value) {
+            setState(() {
+              _tipoC = value!;
+            });
+          },
+          items: const [
+            DropdownMenuItem(value: 'Elige Tipo', child: Text('Elige Tipo')),
+            DropdownMenuItem(
+                value: 'Analista Quimico', child: Text('Analista Quimico')),
+            DropdownMenuItem(
+                value: 'Auxiliar de Laboratorio',
+                child: Text('Auxiliar de Laboratorio')),
+            DropdownMenuItem(
+                value: 'Tecnico Quimico', child: Text('Tecnico Quimico')),
+          ],
+          decoration: const InputDecoration(
+            labelText: 'Tipo de Cargo',
+            border: OutlineInputBorder(),
+          ),
         ),
       ),
       const SizedBox(height: 20),
-      TextField(
-        controller: _dateControllerini,
-        decoration: const InputDecoration(
-          labelText: 'Fecha Inicio Contrato',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(2),
+        child: TextFormField(
+          controller: _dateControllerini,
+          decoration: const InputDecoration(
+            labelText: 'Fecha Inicio Contrato',
+            border: OutlineInputBorder(),
+          ),
+          readOnly: true,
+          onTap: () async {
+            DateTime? date = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(1900),
+              lastDate: DateTime.now(),
+            );
+            if (date != null) {
+              String formattedDate =
+                  DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES')
+                      .format(date);
+              _dateControllerini.text = formattedDate;
+            }
+          },
         ),
-        readOnly: true,
-        onTap: () async {
-          DateTime? date = await showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime(1900),
-            lastDate: DateTime.now(),
-          );
-          if (date != null) {
-            String formattedDate =
-                DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES').format(date);
-            _dateControllerini.text = formattedDate;
-          }
-        },
       ),
       const SizedBox(height: 20),
-      TextField(
-        controller: _dateControllerfina,
-        decoration: const InputDecoration(
-          labelText: 'Fecha Finalización Contrato',
-          border: OutlineInputBorder(),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(3),
+        child: TextFormField(
+          controller: _dateControllerfina,
+          decoration: const InputDecoration(
+            labelText: 'Fecha Finalización Contrato',
+            border: OutlineInputBorder(),
+          ),
+          readOnly: true,
+          onTap: () async {
+            DateTime? date = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime.now(),
+              lastDate: DateTime(2100),
+            );
+            if (date != null) {
+              String formattedDate =
+                  DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES')
+                      .format(date);
+              _dateControllerfina.text = formattedDate;
+            }
+          },
         ),
-        readOnly: true,
-        onTap: () async {
-          DateTime? date = await showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime.now(),
-            lastDate: DateTime(2100),
-          );
-          if (date != null) {
-            String formattedDate =
-                DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES').format(date);
-            _dateControllerfina.text = formattedDate;
-          }
-        },
       ),
       const SizedBox(height: 20),
       ElevatedButton(
@@ -357,8 +439,8 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       ),
       const SizedBox(height: 40),
       ElevatedButton(
-        onPressed: _isChecked
-            ? generarPdf(
+        onPressed: _isChecked && _formKey.currentState!.validate()
+            ? generarPdfAnalistaQ(
                 _nombres.text,
                 _apellidos.text,
                 _direccion.text,
@@ -381,38 +463,70 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
             minimumSize: const Size(double.infinity, 50)),
         child: const Text('Generar Contrato'),
       ),
-      const SizedBox(height: 20),
-      ElevatedButton(
-        onPressed: _isChecked ? _onGenerateButtonPressed : null,
-        style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 50)),
-        child: const Text('Enviar Contrato'),
-      ),
     ];
   }
 
-  void _onGenerateButtonPressed() {
+  void _employerData(BuildContext context) {
+    // Guardar los valores originales antes de abrir el diálogo
+    String tempNEmpleador = _nEmpleador.text;
+    String tempREmpleador = _rEmpleador.text;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Confirmación"),
-          content: Text("¿Seguro que quieres enviar el contrato?"),
-          actions: <Widget>[
-            ElevatedButton(
-              child: Text("Cancelar"),
-              onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
-              },
+        return SimpleDialog(
+          title: const Text('Detalles del Empleador'),
+          children: <Widget>[
+            SimpleDialogOption(
+              child: TextFormField(
+                controller: _nEmpleador,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre Empleador',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, ingrese el nombre del empleador';
+                  }
+                  return null;
+                },
+              ),
             ),
-            ElevatedButton(
-              child: Text("Aceptar"),
-              onPressed: () {
-                Navigator.of(context)
-                    .pop(); // Cierra el diálogo antes de generar el PDF// Asume que tienes esta función definida
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Contrato enviado correctamente")));
-              },
+            SimpleDialogOption(
+              child: TextFormField(
+                controller: _rEmpleador,
+                decoration: const InputDecoration(
+                  labelText: 'RUT Empleador',
+                  border: OutlineInputBorder(),
+                ),
+                validator: validateRUT, // Validador de RUT
+              ),
+            ),
+            SimpleDialogOption(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      // Restaurar los valores originales si se cancela
+                      setState(() {
+                        _nEmpleador.text = tempNEmpleador;
+                        _rEmpleador.text = tempREmpleador;
+                      });
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancelar'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    child: const Text('Guardar'),
+                  ),
+                ],
+              ),
             ),
           ],
         );
@@ -421,54 +535,91 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
   }
 
   void _showSalaryDialog(BuildContext context) {
+    String tempSueldoBase = _sueldoBase.text;
+    String tempColacion = _colacion.text;
+    String tempBonoAsistencia = _bonoAsistencia.text;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
           title: const Text('Detalles del Sueldo'),
           children: <Widget>[
-            SimpleDialogOption(
-              child: TextField(
-                controller: _sueldoBase,
-                decoration: InputDecoration(
-                  labelText: 'Sueldo Base',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            SimpleDialogOption(
-              child: TextField(
-                controller: _colacion,
-                decoration: InputDecoration(
-                  labelText: 'Asignación de Colación',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            SimpleDialogOption(
-              child: TextField(
-                controller: _bonoAsistencia,
-                decoration: InputDecoration(
-                  labelText: 'Bono de Asistencia',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            SimpleDialogOption(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Form(
+              key: _salaryKey,
+              child: Column(
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancelar'),
+                  SimpleDialogOption(
+                    child: TextFormField(
+                      controller: _sueldoBase,
+                      decoration: const InputDecoration(
+                        labelText: 'Sueldo Base',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, ingrese el sueldo base';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Guardar'),
+                  SimpleDialogOption(
+                    child: TextFormField(
+                      controller: _colacion,
+                      decoration: const InputDecoration(
+                        labelText: 'Asignación de Colación',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, ingrese la asignación de colación';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  SimpleDialogOption(
+                    child: TextFormField(
+                      controller: _bonoAsistencia,
+                      decoration: const InputDecoration(
+                        labelText: 'Bono de Asistencia',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, ingrese el bono de asistencia';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  SimpleDialogOption(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            // Restaurar los valores originales si se cancela
+                            setState(() {
+                              _sueldoBase.text = tempSueldoBase;
+                              _colacion.text = tempColacion;
+                              _bonoAsistencia.text = tempBonoAsistencia;
+                            });
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Cancelar'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          child: const Text('Guardar'),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -479,53 +630,17 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
     );
   }
 
-  void _employerData(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return SimpleDialog(
-          title: const Text('Detalles del Empleador'),
-          children: <Widget>[
-            SimpleDialogOption(
-              child: TextField(
-                controller: _nEmpleador,
-                decoration: InputDecoration(
-                  labelText: 'Nombre Empleador',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            SimpleDialogOption(
-              child: TextField(
-                controller: _rEmpleador,
-                decoration: InputDecoration(
-                  labelText: 'RUT Empleador',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            SimpleDialogOption(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancelar'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Guardar'),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
+  String? validateRUT(String? value) {
+    if (value == null || !RegExp(r'^\d{1,8}-[0-9kK]{1}$').hasMatch(value)) {
+      return 'Formato de RUT inválido';
+    }
+    return null;
+  }
+
+  String? validateEmail(String? value) {
+    if (value == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+      return 'Formato de correo inválido';
+    }
+    return null;
   }
 }

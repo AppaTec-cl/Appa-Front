@@ -1,8 +1,53 @@
+import 'dart:typed_data';
+
+import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:googleapis/storage/v1.dart' as storage;
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:googleapis_auth/auth_io.dart';
+import 'package:appatec_prototipo/endpoint/config.dart';
 
-generarPdf(
+Future<void> uploadFileToGoogleCloud(String filePath) async {
+  var client = await CloudStorageConfig.getClient();
+  var bucketName = 'almacenamiento_pdf';
+  var fileToUpload = File(filePath);
+  var media = storage.Media(fileToUpload.openRead(), fileToUpload.lengthSync());
+  var destination = 'contratos/${fileToUpload.uri.pathSegments.last}';
+
+  try {
+    var insertRequest = storage.Object()
+      ..bucket = bucketName
+      ..name = destination;
+
+    await storage.StorageApi(client)
+        .objects
+        .insert(insertRequest, bucketName, uploadMedia: media);
+    print('Archivo cargado con éxito a Google Cloud Storage');
+  } catch (e) {
+    print('Error al cargar el archivo: $e');
+  } finally {
+    client.close();
+  }
+}
+
+Future<Uint8List> loadAsset(String path) async {
+  final ByteData data = await rootBundle.load(path);
+  return data.buffer.asUint8List();
+}
+
+Future<Uint8List> downloadImage(String url) async {
+  final response = await http.get(Uri.parse(url));
+  if (response.statusCode == 200) {
+    return response.bodyBytes;
+  } else {
+    throw Exception('Failed to download image: ${response.statusCode}');
+  }
+}
+
+generarPdfAnalistaQ(
         nombres,
         apellidos,
         direccion,
@@ -19,12 +64,38 @@ generarPdf(
         colacion,
         bonoAsistencia,
         nEmpleador,
-        rEmpleador) =>
+        rEmpleador,
+        urlImagen) =>
     () async {
       final pdf = pw.Document();
 
+      String result = await urlImagen;
+      final imageData = await downloadImage(result);
+
+      final image = pw.MemoryImage(imageData);
+
+      final watermarkData = await loadAsset('assets/img/logo.png');
+      final watermark = pw.MemoryImage(watermarkData);
+
+      pw.PageTheme pageTheme = pw.PageTheme(
+        buildBackground: (pw.Context context) {
+          return pw.FullPage(
+            ignoreMargins: true,
+            child: pw.Positioned(
+              child: pw.Opacity(
+                opacity: 0.7, // Adjust opacity for your watermark
+                child: pw.Image(watermark, width: 100, height: 50),
+              ),
+              top: 1, // Adjust position accordingly
+              right: 1, // Adjust position accordingly
+            ),
+          );
+        },
+      );
+
       pdf.addPage(
         pw.MultiPage(
+          pageTheme: pageTheme,
           build: (pw.Context context) => [
             pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -371,12 +442,75 @@ generarPdf(
                     'entera satisfacción un ejemplar de él y que este es fiel reflejo de la relación laboral entre las partes, declara, '
                     'además, recibir conjuntamente con la copia del contrato, una copia del Reglamento Interno de la empresa.\n\n',
                 style: const pw.TextStyle(fontSize: 11)),
+            pw.SizedBox(height: 40), // Espacio antes de la sección de firmas
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  children: [
+                    pw.Image(image, width: 150),
+                    pw.Container(
+                      width: 150,
+                      child: pw.Divider(),
+                    ),
+                    pw.Text('World Survey Services S.A. (WSS)'),
+                    pw.Text('RUT: 96947280-5'),
+                    pw.Text('Empresa'),
+                  ],
+                ),
+                pw.Column(
+                  children: [
+                    pw.Container(
+                      width: 150,
+                      child: pw.Divider(),
+                    ),
+                    pw.Text('$nombres'),
+                    pw.Text('RUT: $rut'),
+                    pw.Text('Trabajador'),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
       );
-      // Save the document to a file
-      final String dir = (await getDownloadsDirectory())?.path ?? '';
-      final String path = '$dir/contrato_$nombres.pdf';
-      final File file = File(path);
-      await file.writeAsBytes(await pdf.save());
+
+      String ensurePdfExtension(String fileName) {
+        // Asegurarse de que el nombre del archivo termina con '.pdf'
+        if (!fileName.toLowerCase().endsWith('.pdf')) {
+          fileName += '.pdf'; // Agregar la extensión .pdf si no está presente
+        }
+        return fileName;
+      }
+
+      Future<void> manageFileUpload(String nombres) async {
+        String initialFileName =
+            'Contrato $nombres'; // Nombre inicial del archivo
+        String? filePath = await FilePicker.platform.saveFile(
+          dialogTitle: 'Elige donde desea guardar su contrato',
+          fileName: initialFileName,
+          type: FileType.custom,
+          allowedExtensions: ['pdf'],
+        );
+
+        if (filePath != null) {
+          File file = File(filePath);
+          String correctedFileName =
+              ensurePdfExtension(file.uri.pathSegments.last);
+
+          // Asegúrate de que el archivo guardado localmente tiene la extensión .pdf
+          String correctedFilePath = file.parent.path + '/' + correctedFileName;
+          File correctedFile = File(correctedFilePath);
+
+          // Escribir los bytes del PDF en el nuevo archivo con la extensión asegurada
+          await correctedFile.writeAsBytes(await pdf.save());
+
+          // Subir el archivo con el nombre corregido a Google Cloud Storage
+          await uploadFileToGoogleCloud(correctedFilePath);
+          var publicUrl =
+              'https://storage.googleapis.com/almacenamiento_pdf/contratos_firmados/$correctedFileName';
+        }
+      }
+
+      manageFileUpload(nombres);
     };

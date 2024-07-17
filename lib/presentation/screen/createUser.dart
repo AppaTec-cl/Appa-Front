@@ -1,5 +1,12 @@
 import 'dart:convert';
+import 'dart:typed_data';
+import 'package:appatec_prototipo/endpoint/config.dart';
 import 'package:flutter/material.dart';
+import 'package:signature/signature.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:googleapis/storage/v1.dart' as storage;
 import 'package:http/http.dart' as http;
 
 class UserAPI {
@@ -36,8 +43,64 @@ class _UserFormScreenState extends State<UserFormScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String? _selectedRole;
+  final SignatureController _signatureController = SignatureController(
+    penStrokeWidth: 1,
+    penColor: Colors.black,
+  );
 
   bool _isLoading = false;
+  bool _isGeneralManager = false;
+  Uint8List? _signatureBytes;
+
+  Future<void> _saveSignatureTemporarily() async {
+    if (_signatureController.isNotEmpty) {
+      final signature = await _signatureController.toPngBytes();
+      if (signature != null) {
+        setState(() {
+          _signatureBytes = signature;
+        });
+      }
+    }
+  }
+
+  Future<String?> _uploadSignatureToGoogleCloud(String userName) async {
+    if (_signatureBytes != null) {
+      final directory = await getTemporaryDirectory();
+      final imagePath = '${directory.path}/firma_$userName.png';
+      final imageFile = File(imagePath);
+      await imageFile.writeAsBytes(_signatureBytes!);
+
+      var client = await CloudStorageConfig.getClient();
+      var bucketName = 'almacenamiento_pdf';
+      var fileToUpload = File(imagePath);
+      var media =
+          storage.Media(fileToUpload.openRead(), fileToUpload.lengthSync());
+      var destination = 'firmas/firma_$userName.png';
+
+      try {
+        var insertRequest = storage.Object()
+          ..bucket = bucketName
+          ..name = destination;
+
+        var response = await storage.StorageApi(client)
+            .objects
+            .insert(insertRequest, bucketName, uploadMedia: media);
+        print('Archivo cargado con éxito a Google Cloud Storage');
+
+        var publicUrl =
+            'https://storage.googleapis.com/$bucketName/$destination';
+        print('URL de la firma: $publicUrl');
+
+        return publicUrl;
+      } catch (e) {
+        print('Error al cargar el archivo: $e');
+        return null;
+      } finally {
+        client.close();
+      }
+    }
+    return null;
+  }
 
   final List<String> _roles = [
     'Jefe de Recursos Humanos',
@@ -51,6 +114,13 @@ class _UserFormScreenState extends State<UserFormScreen> {
         _isLoading = true;
       });
 
+      String? signatureUrl;
+      if (_isGeneralManager) {
+        final fullName =
+            '${_firstNameController.text}_${_lastNamePController.text}_${_lastNameMController.text}';
+        signatureUrl = await _uploadSignatureToGoogleCloud(fullName);
+      }
+
       Map<String, String> userData = {
         'rut': _rutController.text,
         'nombres': _firstNameController.text,
@@ -59,6 +129,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
         'correo_electronico': _emailController.text,
         'rol': _selectedRole ?? '',
         'password': _passwordController.text,
+        'firma': signatureUrl ?? 'null',
       };
 
       String jsonData = jsonEncode(userData);
@@ -67,7 +138,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
         await UserAPI.sendUserData(jsonData);
         _showSuccessMessage();
       } catch (error) {
-        _showSuccessMessage();
+        _showErrorMessage();
       } finally {
         setState(() {
           _isLoading = false;
@@ -107,104 +178,182 @@ class _UserFormScreenState extends State<UserFormScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    TextFormField(
-                      controller: _rutController,
-                      decoration: InputDecoration(labelText: 'RUT'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese el RUT';
-                        }
-                        if (!validateRut(value)) {
-                          return 'Formato de RUT inválido';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _firstNameController,
-                      decoration: InputDecoration(labelText: 'Nombres'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese los nombres';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _lastNamePController,
-                      decoration:
-                          InputDecoration(labelText: 'Apellido Paterno'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese el apellido paterno';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _lastNameMController,
-                      decoration:
-                          InputDecoration(labelText: 'Apellido Materno'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese el apellido materno';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration:
-                          InputDecoration(labelText: 'Correo Electrónico'),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese el correo electrónico';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration: InputDecoration(labelText: 'Contraseña'),
-                      obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese la contraseña';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: _selectedRole,
-                      hint: Text('Seleccione un rol'),
-                      onChanged: (newValue) {
-                        setState(() {
-                          _selectedRole = newValue;
-                        });
-                      },
-                      items: _roles.map((role) {
-                        return DropdownMenuItem(
-                          value: role,
-                          child: Text(role),
-                        );
-                      }).toList(),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor seleccione un rol';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _submitData,
-                      child: Text('Enviar'),
+                    FocusTraversalGroup(
+                      policy: OrderedTraversalPolicy(),
+                      child: Column(
+                        children: [
+                          FocusTraversalOrder(
+                            order: NumericFocusOrder(1),
+                            child: TextFormField(
+                              controller: _rutController,
+                              decoration: const InputDecoration(
+                                labelText: 'RUT (Sin puntos y con guión)',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor ingrese el RUT';
+                                }
+                                if (!validateRut(value)) {
+                                  return 'Formato de RUT inválido';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          FocusTraversalOrder(
+                            order: NumericFocusOrder(2),
+                            child: TextFormField(
+                              controller: _firstNameController,
+                              decoration: const InputDecoration(
+                                labelText: 'Nombres',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor ingrese los nombres';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          FocusTraversalOrder(
+                            order: NumericFocusOrder(3),
+                            child: TextFormField(
+                              controller: _lastNamePController,
+                              decoration: const InputDecoration(
+                                labelText: 'Apellido Paterno',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor ingrese el apellido paterno';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          FocusTraversalOrder(
+                            order: NumericFocusOrder(4),
+                            child: TextFormField(
+                              controller: _lastNameMController,
+                              decoration: const InputDecoration(
+                                labelText: 'Apellido Materno',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor ingrese el apellido materno';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          FocusTraversalOrder(
+                            order: NumericFocusOrder(5),
+                            child: TextFormField(
+                              controller: _emailController,
+                              decoration: const InputDecoration(
+                                labelText: 'Correo Electrónico',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor ingrese el correo electrónico';
+                                }
+                                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                                    .hasMatch(value)) {
+                                  return 'Formato de correo inválido';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          FocusTraversalOrder(
+                            order: NumericFocusOrder(6),
+                            child: TextFormField(
+                              controller: _passwordController,
+                              decoration: const InputDecoration(
+                                labelText: 'Contraseña',
+                                border: OutlineInputBorder(),
+                              ),
+                              obscureText: true,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor ingrese la contraseña';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          FocusTraversalOrder(
+                            order: NumericFocusOrder(7),
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedRole,
+                              hint: Text('Seleccione un rol'),
+                              onChanged: (newValue) {
+                                setState(() {
+                                  _selectedRole = newValue;
+                                  _isGeneralManager =
+                                      newValue == 'Gerente General';
+                                });
+                              },
+                              items: _roles.map((role) {
+                                return DropdownMenuItem(
+                                  value: role,
+                                  child: Text(role),
+                                );
+                              }).toList(),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor seleccione un rol';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          if (_isGeneralManager) ...[
+                            const Text('Firma del Gerente General',
+                                style: TextStyle(fontSize: 18)),
+                            const SizedBox(height: 20),
+                            Signature(
+                              controller: _signatureController,
+                              height: 200,
+                              backgroundColor: Colors.grey[200]!,
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    _signatureController.clear();
+                                  },
+                                  child: const Text('Borrar'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    await _saveSignatureTemporarily();
+                                  },
+                                  child: const Text('Guardar'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                          ElevatedButton(
+                            onPressed: _submitData,
+                            child: Text('Enviar'),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
