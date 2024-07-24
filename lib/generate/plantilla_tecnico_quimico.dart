@@ -25,9 +25,7 @@ Future<void> uploadFileToGoogleCloud(String filePath) async {
     await storage.StorageApi(client)
         .objects
         .insert(insertRequest, bucketName, uploadMedia: media);
-    print('Archivo cargado con éxito a Google Cloud Storage');
   } catch (e) {
-    print('Error al cargar el archivo: $e');
   } finally {
     client.close();
   }
@@ -310,7 +308,7 @@ Future<void> generarPdfTecnicoQ(
                 'o bien, promover o inducir a otros a realizar tales actos, sin sujeción a las disposiciones legales que regulan '
                 'los conflictos colectivos.\n\n'
                 's) El trabajador no puede realizar ninguna actividad a beneficio personal dentro del giro específico de la '
-                'empresa y/o de las empresas a las que se les están prestando “los servicios”, lo cual queda expresamente '
+                'empresa y/o de las empresas a las que se les están prestando "los servicios", lo cual queda expresamente '
                 'prohibido.\n\n'
                 't) El trabajador se obliga a mantener absoluta reserva respecto de los procedimientos, métodos de trabajo '
                 'y utilización de sistemas y técnicas de control de calidad, como asimismo respecto de los proyectos o '
@@ -428,7 +426,7 @@ Future<void> generarPdfTecnicoQ(
                   child: pw.Divider(),
                 ),
                 pw.Text('World Survey Services S.A. (WSS)'),
-                pw.Text('RUT: 96947280-5'),
+                pw.Text('RUT: 96.947.280-5'),
                 pw.Text('Empresa'),
               ],
             ),
@@ -458,7 +456,8 @@ Future<void> generarPdfTecnicoQ(
   }
 
   Future<void> manageFileUpload(String nombres) async {
-    String initialFileName = 'Contrato $nombres'; // Nombre inicial del archivo
+    String initialFileName =
+        'Contrato_$nombres' + rut; // Nombre inicial del archivo
     String? filePath = await FilePicker.platform.saveFile(
       dialogTitle: 'Elige donde desea guardar su contrato',
       fileName: initialFileName,

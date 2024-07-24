@@ -2,25 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:ACG/presentation/screen/login.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+// Función principal que inicia la aplicación
 void main() {
+  // Inicializa la localización de fecha en español
   initializeDateFormatting('es_ES', null).then((_) {
-    runApp(const MyApp());
+    runApp(const MiAplicacion());
   });
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+// Clase principal de la aplicación que extiende StatefulWidget
+class MiAplicacion extends StatefulWidget {
+  const MiAplicacion({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<MiAplicacion> createState() => _EstadoMiAplicacion();
 }
 
-class _MyAppState extends State<MyApp> {
-  bool _isDarkMode = false;
+// Estado de la clase principal MiAplicacion
+class _EstadoMiAplicacion extends State<MiAplicacion> {
+  bool _modoOscuro =
+      false; // Variable que indica si el modo oscuro está activado
 
-  void toggleTheme() {
+  // Método para cambiar entre el modo oscuro y el modo claro
+  void alternarTema() {
     setState(() {
-      _isDarkMode = !_isDarkMode;
+      _modoOscuro = !_modoOscuro;
     });
   }
 
@@ -29,11 +35,12 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: _isDarkMode ? Brightness.dark : Brightness.light,
+        brightness: _modoOscuro ? Brightness.dark : Brightness.light,
         useMaterial3: true,
-        colorSchemeSeed: _isDarkMode ? Colors.grey : Colors.blue,
+        colorSchemeSeed: _modoOscuro ? Colors.grey : Colors.blue,
       ),
-      home: LoginScreen(toggleTheme: toggleTheme, isDarkMode: _isDarkMode),
+      home: PantallaInicioSesion(
+          alternarTema: alternarTema, modoOscuro: _modoOscuro),
     );
   }
 }

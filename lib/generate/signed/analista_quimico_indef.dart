@@ -1,6 +1,4 @@
 import 'dart:typed_data';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
@@ -10,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:googleapis_auth/auth_io.dart';
 import 'package:ACG/endpoint/config.dart';
 import 'package:ACG/endpoint/contract.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 Future<void> uploadFileToGoogleCloud(String filePath) async {
   var client = await CloudStorageConfig.getClient();
@@ -46,7 +46,7 @@ Future<Uint8List> downloadImage(String url) async {
   }
 }
 
-Future<void> generarPdfAnalistaQ(
+Future<void> generarPdfAnalistaQIndef(
     nombres,
     apellidos,
     direccion,
@@ -58,7 +58,6 @@ Future<void> generarPdfAnalistaQ(
     salud,
     afp,
     inicio,
-    finalizacion,
     sueldoBase,
     colacion,
     bonoAsistencia,
@@ -386,7 +385,7 @@ Future<void> generarPdfAnalistaQ(
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
         pw.Paragraph(
             text:
-                'Se deja expresamente constancia de que el trabajador ingresa al servicio de la empresa el $inicio y que la duración del presente contrato será hasta el $finalizacion. '
+                'Se deja expresamente constancia de que el trabajador ingresa al servicio de la empresa el $inicio y que la duración del presente contrato será indefinido. '
                 '\n\nSe deja expresamente establecido que las partes aceptan como condición esencial para la vigencia del '
                 'presente contrato de trabajo que el empleador mantenga su calidad de contratista o subcontratista de la '
                 'mencionada obra (faena).'
@@ -471,7 +470,8 @@ Future<void> generarPdfAnalistaQ(
   }
 
   Future<void> manageFileUpload(String nombres) async {
-    String initialFileName = 'Contrato_$nombres' + rut;
+    String initialFileName =
+        'Contrato_$nombres' + rut; // Nombre inicial del archivo
     String? filePath = await FilePicker.platform.saveFile(
       dialogTitle: 'Elige donde desea guardar su contrato',
       fileName: initialFileName,

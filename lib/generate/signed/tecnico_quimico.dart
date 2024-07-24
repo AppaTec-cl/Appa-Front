@@ -1,6 +1,5 @@
 import 'dart:typed_data';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
@@ -10,6 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:googleapis_auth/auth_io.dart';
 import 'package:ACG/endpoint/config.dart';
 import 'package:ACG/endpoint/contract.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 Future<void> uploadFileToGoogleCloud(String filePath) async {
   var client = await CloudStorageConfig.getClient();
@@ -46,7 +47,7 @@ Future<Uint8List> downloadImage(String url) async {
   }
 }
 
-Future<void> generarPdfAnalistaQ(
+Future<void> generarPdfTecnicoQ(
     nombres,
     apellidos,
     direccion,
@@ -108,56 +109,59 @@ Future<void> generarPdfAnalistaQ(
             ),
           ),
           pw.Text(
-              'En Calama, a $inicio, entre la empresa World Survey Services S.A. (WSS), Rut. 96.947.280-5, '
-              'representado para estos efectos por don $nEmpleador, Cédula de Identidad Nro. $rEmpleador, '
-              'nacionalidad CHILENO ambos domiciliados en la calle José Ananías N° 651, Macul, Ciudad de Santiago, Región Metropolitana, '
-              'y otra parte don/ña $nombres $apellidos, Cédula de Identidad Nro. $rut nacionalidad $nacionalidad, nacido el $nacimiento estado civil '
-              '$civil con domicilio en $direccion, Ciudad de CALAMA, ANTOFAGASTA, correo electrónico $correo se conviene el siguiente contrato de trabajo, '
+              'En Santiago, a $inicio, entre la empresa World Survey Services S.A. (WSS), Rut. '
+              '96.947.280-5, representado para estos efectos por don $nEmpleador, '
+              'Cédula de Identidad Nro. $rEmpleador, ambos domiciliados en la calle José Ananías N° 651, Macul, '
+              'Ciudad de Santiago, Región Metropolitana, y otra parte don/ña $nombres $apellidos, '
+              'Cédula de Identidad Nro. $rut nacionalidad $nacionalidad, nacido el $nacimiento estado '
+              'civil $civil con domicilio en $direccion, Ciudad de CALAMA, '
+              'ANTOFAGASTA, correo electrónico $correo se conviene el siguiente contrato de trabajo, '
               'para cuyos efectos las partes se denominarán empleador y trabajador respectivamente.\n\n',
               style: const pw.TextStyle(fontSize: 11),
               textAlign: pw.TextAlign.justify),
-          pw.Text('PRIMERO: NATURALEZA DE LOS SERVICIOS\n',
+          pw.Text('PRIMERO: NATURALEZA DE LOS SERVICIOS\n\n',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
-          pw.Text(
-              '\nEl trabajador se compromete a desempeñar el cargo de: ANALISTA QUIMICO y a realizar las funciones encomendadas en el presente documento en '
-              'Laboratorio Químico división minería Calama, Ubicado en Camino Chiu Chiu #386, Sitio 45, Sector Puerto Seco, Barrio Industrial.\n\n',
+          pw.Text('El trabajador se compromete a:\n\n',
               style: const pw.TextStyle(fontSize: 11),
               textAlign: pw.TextAlign.justify),
-          pw.Text('SEGUNDO: REMUNERACIONES\n',
+          pw.Text('Desempeñar el cargo de: TECNICO ANÁLISIS QUÍMICO\n\n',
+              style:
+                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
+          pw.Text('SEGUNDO: REMUNERACIONES\n\n',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
           pw.Text(
-              '\nEl empleador se compromete a remunerar los servicios del trabajador con:\n\n',
+              'El empleador se compromete a remunerar los servicios del trabajador con:\n\n',
               style: const pw.TextStyle(fontSize: 11)),
-          pw.Text('SUELDO BASE: \n',
+          pw.Text('SUELDO BASE: ',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
           pw.Text(
               'El empleador se compromete a remunerar los servicios del trabajador con un sueldo base '
               'imponible mensual por mes vencido en dinero efectivo, moneda nacional, siendo proporcional a los días '
-              'efectivamente trabajados, por un valor de \$$sueldoBase.',
+              'efectivamente trabajados, por un valor de \$$sueldoBase.\n\n',
               style: const pw.TextStyle(fontSize: 11),
               textAlign: pw.TextAlign.justify),
-          pw.Text('\nASIGNACIÓN DE COLACIÓN: \n',
+          pw.Text('ASIGNACIÓN DE COLACIÓN: ',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
           pw.Text(
               'La Empresa pagará al Trabajador una asignación no imponible de colación '
-              'por la cantidad de \$$colacion Líquidos, siendo proporcional a los días efectivos trabajados.',
+              'por la cantidad de \$$colacion Líquidos, siendo proporcional a los días efectivos trabajados.\n\n',
               style: const pw.TextStyle(fontSize: 11),
               textAlign: pw.TextAlign.justify),
-          pw.Text('\nGRATIFICACIÓN: \n',
+          pw.Text('GRATIFICACIÓN: ',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
           pw.Text(
               'El empleador pagará mensualmente al trabajador un 25% del total de las '
               'remuneraciones mensuales, con un tope de un doceavo de 4,75 ingresos mínimos mensuales, como '
               'gratificación legal, de conformidad a lo dispuesto en el Art. 50 del Código del Trabajo -D.F.L. Nro.1 del '
-              '24.01.94',
+              '24.01.94\n\n',
               style: const pw.TextStyle(fontSize: 11),
               textAlign: pw.TextAlign.justify),
-          pw.Text('\nBONO DE ASISTENCIA: \n',
+          pw.Text('BONO DE ASISTENCIA: ',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
           pw.Text(
@@ -171,7 +175,7 @@ Future<void> generarPdfAnalistaQ(
             style: const pw.TextStyle(fontSize: 11),
             bulletShape: pw.BoxShape.circle, // Para un círculo sólido
             bulletSize:
-                7, // Tamaño de la viñetaPersonaliza la viñeta si es necesario
+                5, // Tamaño de la viñetaPersonaliza la viñeta si es necesario
           ),
           pw.Padding(
             padding: const pw.EdgeInsets.only(left: 20),
@@ -198,9 +202,9 @@ Future<void> generarPdfAnalistaQ(
             style: const pw.TextStyle(fontSize: 11),
             bulletShape: pw.BoxShape.circle, // Para un círculo sólido
             bulletSize:
-                7, // Tamaño de la viñetaPersonaliza la viñeta si es necesario
+                5, // Tamaño de la viñetaPersonaliza la viñeta si es necesario
           ),
-          pw.Text('\n\n\n\n\n\nFORMA DE PAGO: \n',
+          pw.Text('\n\n\n\n\n\nFORMA DE PAGO: ',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
           pw.Text(
@@ -211,30 +215,30 @@ Future<void> generarPdfAnalistaQ(
               'pagará estos con el recargo del 50% del valor de la hora normal. \n\n'
               'El pago de la (s) remuneración (es) se hará dentro del plazo que estipula la ley, sin embargo, la empresa '
               'pagará por todos los medios a su alcance el último día hábil del mes o el día hábil anterior más próxima si '
-              'este fuera sábado, domingo o festivo.',
+              'este fuera sábado, domingo o festivo.\n\n',
               style: const pw.TextStyle(fontSize: 11),
               textAlign: pw.TextAlign.justify),
-          pw.Text('\nLEYES SOCIALES: \n',
+          pw.Text('LEYES SOCIALES: ',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
           pw.Text(
               'El empleador hará las deducciones que establecen las Leyes vigentes Art. 58 del '
               'Código del Trabajo y/o las acordadas previamente con el trabajador de las remuneraciones percibidas.\n\n'
-              'Se indica además que el/la trabajador (a) cotiza en AFP $afp y $salud',
+              'Se indica además que el/la trabajador (a) cotiza en AFP $afp y $salud\n\n',
               style: const pw.TextStyle(fontSize: 11),
               textAlign: pw.TextAlign.justify),
-          pw.Text('\nTERCERO: LUGAR DE TRABAJO\n',
+          pw.Text('TERCERO: LUGAR DE TRABAJO\n\n',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
           pw.Text(
               'El trabajador se compromete a realizar las funciones encomendadas en el presente documento en '
               'Laboratorio Químico división minería Calama, Ubicado en Camino Chiu Chiu #386, Sitio 45, Sector Puerto '
-              ' Seco, Barrio Industria',
+              'Seco, Barrio Industria\n\n',
               style: const pw.TextStyle(fontSize: 11)),
-          pw.Text('\nCUARTO: JORNADA DE TRABAJO\n',
+          pw.Text('CUARTO: JORNADA DE TRABAJO\n\n',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
-          pw.Text('\nARTICULO 22 INCISO N° 2\n',
+          pw.Text('ARTICULO 22 INCISO N° 2\n\n',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
           pw.Text(
@@ -242,15 +246,15 @@ Future<void> generarPdfAnalistaQ(
               'en el artículo 22 del código del trabajo, el trabajador no se encontrara sujeto a jornada ordinaria o '
               'determinada de trabajo, debiendo efectuar sus mejores esfuerzos para el mejor desempeño de su cometido '
               'y el logro de los fines propuestos por el empleador al contratarlo, todos los cuales son conocidos del '
-              'trabajador',
+              'trabajador\n\n',
               style: const pw.TextStyle(fontSize: 11),
               textAlign: pw.TextAlign.justify),
-          pw.Text('\nQUINTO: OBLIGACIONES\n',
+          pw.Text('QUINTO: OBLIGACIONES\n\n',
               style:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
         ]),
         pw.Paragraph(
-            text: '\nSerán obligaciones del trabajador:\n\n'
+            text: 'Serán obligaciones del trabajador:\n\n'
                 'a) Concurrir diariamente al trabajo y dar estricto cumplimiento a la jornada.\n\n'
                 'b) Desempeñar las labores que se le encomiendan, en forma fiel y eficiente, debiendo acatar las órdenes de sus jefes directos, técnicos y ejecutivos de la empresa.\n\n'
                 'c) Hacer uso de los elementos de protección personal, proporcionados por la empresa, que correspondan dada la naturaleza del trabajo que se encuentre desempeñando. De acuerdo a lo estipulado en Decreto Supremo Nro. 594 que reglamenta sobre condiciones sanitarias y ambientales básicas en los lugares de trabajo; párrafo IV, art. 53.\n\n'
@@ -273,12 +277,12 @@ Future<void> generarPdfAnalistaQ(
                 'w) Los trabajadores que se les asigna dineros a rendir para la ejecución de los trabajos conforme a sus servicios, deben rendir periódicamente y no debe ser más allá de 15 días corridos.\n\n'
                 'Las infracciones a estas normas constituirán un grave incumplimiento a las obligaciones que impone el '
                 'contrato de trabajo, y habilitarán al empleador para poner término al mismo. Ello, sin perjuicio de otras '
-                'infracciones que importen también la terminación del contrato.',
+                'infracciones que importen también la terminación del contrato.\n\n',
             style: const pw.TextStyle(fontSize: 11)),
-        pw.Text('\nSEXTO: PROHIBICIONES\n',
+        pw.Text('SEXTO: PROHIBICIONES\n\n',
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
         pw.Paragraph(
-            text: '\nSerán obligaciones del trabajador:\n\n'
+            text: 'Serán obligaciones del trabajador:\n\n'
                 'Serán causales de término del presente contrato de trabajo las contenidas en los artículos 159, 160 y 161 '
                 'del Código del Trabajo, y las que en el futuro se establezcan por ley, todas las cuales se dan por completa '
                 'y expresamente reproducidas, entendiéndose, que forman parte integrante del presente contrato:\n\n'
@@ -369,41 +373,41 @@ Future<void> generarPdfAnalistaQ(
                 'La transgresión a estas prohibiciones, será considerada como falta grave para las obligaciones que le '
                 'impone su contrato de trabajo.\n\n',
             style: const pw.TextStyle(fontSize: 11)),
-        pw.Text('SEPTIMO: CONDICIONES DE TRABAJO\n',
+        pw.Text('SEPTIMO: CONDICIONES DE TRABAJO\n\n',
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
         pw.Paragraph(
             text:
-                '\nEl trabajador declara tener la salud compatible con el tipo de trabajo que deberá desempeñar de acuerdo '
+                'El trabajador declara tener la salud compatible con el tipo de trabajo que deberá desempeñar de acuerdo '
                 'al presente Contrato de Trabajo. Declara, además, haber tomado conocimiento de los riesgos involucrados en el trabajo a ejecutar.\n\n',
             style: const pw.TextStyle(fontSize: 11)),
-        pw.Text('OCTAVO: ASPECTOS LEGALES\n',
+        pw.Text('OCTAVO: ASPECTOS LEGALES\n\n',
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
         pw.Paragraph(
             text:
-                '\nPara todos los efectos legales derivados del presente contrato de trabajo, las partes fijan domicilio en la ciudad de Santiago.\n\n',
+                'Para todos los efectos legales derivados del presente contrato de trabajo, las partes fijan domicilio en la ciudad de Santiago.\n\n',
             style: const pw.TextStyle(fontSize: 11)),
         pw.Text('NOVENO: DURACIÓN\n\n',
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
         pw.Paragraph(
             text:
-                'Se deja expresamente constancia de que el trabajador ingresa al servicio de la empresa el $inicio y que la duración del presente contrato será hasta el $finalizacion. '
-                '\n\nSe deja expresamente establecido que las partes aceptan como condición esencial para la vigencia del '
+                'Se deja expresamente constancia de que el trabajador ingresa al servicio de la empresa el $inicio y que la duración del presente contrato será hasta el $finalizacion.\n\n'
+                'Se deja expresamente establecido que las partes aceptan como condición esencial para la vigencia del '
                 'presente contrato de trabajo que el empleador mantenga su calidad de contratista o subcontratista de la '
-                'mencionada obra (faena).'
-                '\n\nEn consecuencia, el empleador suscribe el presente contrato sobre la base de ser y mantener la calidad de '
+                'mencionada obra (faena).\n\n'
+                'En consecuencia, el empleador suscribe el presente contrato sobre la base de ser y mantener la calidad de '
                 'contratista o subcontratista antes referida y, mientras mantenga tal calidad, de suerte que si por cualquier '
                 'causa, circunstancia o motivo, cese o expire tal calidad, se entiende en forma expresa que igual suerte corre '
-                'el presente contrato de trabajo, situación ésta que es plena y cabalmente aceptada por el trabajador. '
-                '\n\nAdemás, las partes convienen que la conclusión del presente contrato de trabajo se producirá al momento '
+                'el presente contrato de trabajo, situación ésta que es plena y cabalmente aceptada por el trabajador.\n\n'
+                'Además, las partes convienen que la conclusión del presente contrato de trabajo se producirá al momento '
                 'de concluir sus servicios específicos conforme el avance de las obras, según lo determine la empresa, dada '
                 'la necesidad de separar paulatinamente al personal, al paso y medida que va concluyendo la respectiva '
                 'faena y demandando menor mano de obra.\n\n',
             style: const pw.TextStyle(fontSize: 11)),
-        pw.Text('DECIMO: CONSTANCIA\n',
+        pw.Text('DECIMO: CONSTANCIA\n\n',
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
         pw.Paragraph(
             text:
-                '\nDeclaro bajo juramento que toda la información que he entregado a mi empleador respecto de mis '
+                'Declaro bajo juramento que toda la información que he entregado a mi empleador respecto de mis '
                 'antecedentes personales y calificaciones técnicas es fidedigna y que no he señalado nada que no '
                 'corresponda a la verdad, así como tampoco he presentado documentos o certificados adulterados o '
                 'inexactos. Asumo que la decisión en cuanto a mi contratación ha tenido por fundamento la veracidad de los '
@@ -412,20 +416,20 @@ Future<void> generarPdfAnalistaQ(
                 'la buena fe por mi parte en el contexto del contrato.\n\n',
             style: const pw.TextStyle(fontSize: 11)),
         pw.Text(
-            'DECIMO PRIMERO: RECEPCION DE CÓDIGO DE ÉTICA Y EL REGLAMENTO INTERNO DE LA EMPRESA\n',
+            'DECIMO PRIMERO: RECEPCION DE CÓDIGO DE ÉTICA Y EL REGLAMENTO INTERNO DE LA EMPRESA\n\n',
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
         pw.Paragraph(
             text:
-                '\nEl trabajador declara haber recibido el Código de Ética y el Reglamento Interno de la Empresa, los cuales '
+                'El trabajador declara haber recibido el Código de Ética y el Reglamento Interno de la Empresa, los cuales '
                 'forman parte integra del contrato de trabajo para todos los efectos legales, elevando las partes a la categoría '
                 'de incumplimiento grave a las infracciones a cualquiera de las disposiciones, las cuales el Trabajador declara '
                 'conocer, comprender y aceptar.\n\n',
             style: const pw.TextStyle(fontSize: 11)),
-        pw.Text('DECIMO SEGUNDO: EJEMPLARES\n',
+        pw.Text('DECIMO SEGUNDO: EJEMPLARES\n\n',
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
         pw.Paragraph(
             text:
-                '\nEl presente contrato se firma en 3 ejemplares, declarando el trabajador haber recibido en este acto a su '
+                'El presente contrato se firma en 3 ejemplares, declarando el trabajador haber recibido en este acto a su '
                 'entera satisfacción un ejemplar de él y que este es fiel reflejo de la relación laboral entre las partes, declara, '
                 'además, recibir conjuntamente con la copia del contrato, una copia del Reglamento Interno de la empresa.\n\n',
             style: const pw.TextStyle(fontSize: 11)),
@@ -471,7 +475,8 @@ Future<void> generarPdfAnalistaQ(
   }
 
   Future<void> manageFileUpload(String nombres) async {
-    String initialFileName = 'Contrato_$nombres' + rut;
+    String initialFileName =
+        'Contrato_$nombres' + rut; // Nombre inicial del archivo
     String? filePath = await FilePicker.platform.saveFile(
       dialogTitle: 'Elige donde desea guardar su contrato',
       fileName: initialFileName,

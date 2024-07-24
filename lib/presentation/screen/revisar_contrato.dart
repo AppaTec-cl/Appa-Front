@@ -7,52 +7,55 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:convert';
 
-class ContractReviewPage extends StatefulWidget {
-  const ContractReviewPage({super.key});
+// Página para revisar contratos
+class PaginaRevisarContrato extends StatefulWidget {
+  const PaginaRevisarContrato({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
-  _ContractReviewPageState createState() => _ContractReviewPageState();
+  _EstadoPaginaRevisarContrato createState() => _EstadoPaginaRevisarContrato();
 }
 
-class _ContractReviewPageState extends State<ContractReviewPage>
+class _EstadoPaginaRevisarContrato extends State<PaginaRevisarContrato>
     with SingleTickerProviderStateMixin {
-  String? _localPath;
+  String? _rutaLocal;
 
-  late int randomNumber;
-  Contract? _selectedContract;
+  Contract? _contratoSeleccionado;
 
-  final TextEditingController _comentario = TextEditingController();
-  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _controladorComentario = TextEditingController();
+  final TextEditingController _controladorBusqueda = TextEditingController();
 
-  List<Contract> pendingContracts = [];
-  List<Contract> reviewedContracts = [];
+  List<Contract> contratosPendientes = [];
+  List<Contract> contratosRevisados = [];
 
-  TabController? _tabController;
+  TabController? _controladorPestanas;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController?.addListener(() {
+    _controladorPestanas = TabController(length: 2, vsync: this);
+    _controladorPestanas?.addListener(() {
       // Limpia el campo de búsqueda al cambiar de pestaña
-      _searchController.clear();
-      filterContracts(''); // Refresca la lista filtrada según la pestaña activa
+      _controladorBusqueda.clear();
+      filtrarContratos(
+          ''); // Refresca la lista filtrada según la pestaña activa
     });
     fetchContracts("No Revisado").then((data) {
       setState(() {
-        pendingContracts = data;
+        contratosPendientes = data;
       });
     });
     fetchContracts("Revisado").then((data) {
       setState(() {
-        reviewedContracts = data;
+        contratosRevisados = data;
       });
     });
   }
 
-  Future<void> downloadFile() async {
-    if (_selectedContract == null || _selectedContract!.contratoUrl.isEmpty) {
+  // Descarga el archivo PDF del contrato seleccionado
+  Future<void> descargarArchivo() async {
+    if (_contratoSeleccionado == null ||
+        _contratoSeleccionado!.contratoUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Por favor, selecciona un contrato primero')),
@@ -60,11 +63,11 @@ class _ContractReviewPageState extends State<ContractReviewPage>
       return;
     }
 
-    final url =
-        _selectedContract!.contratoUrl; // URL del PDF del contrato seleccionado
+    final url = _contratoSeleccionado!
+        .contratoUrl; // URL del PDF del contrato seleccionado
     try {
       final fileInfo = await DefaultCacheManager().downloadFile(url);
-      _localPath = fileInfo.file.path;
+      _rutaLocal = fileInfo.file.path;
       setState(() {});
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -73,16 +76,17 @@ class _ContractReviewPageState extends State<ContractReviewPage>
     }
   }
 
-  String ensurePdfExtension(String fileName) {
-    // Asegurarse de que el nombre del archivo termina con '.pdf'
-    if (!fileName.toLowerCase().endsWith('.pdf')) {
-      fileName += '.pdf'; // Agregar la extensión .pdf si no está presente
+  // Asegura que el nombre del archivo tenga la extensión '.pdf'
+  String asegurarExtensionPdf(String nombreArchivo) {
+    if (!nombreArchivo.toLowerCase().endsWith('.pdf')) {
+      nombreArchivo += '.pdf'; // Agregar la extensión .pdf si no está presente
     }
-    return fileName;
+    return nombreArchivo;
   }
 
-  Future<void> saveFileLocally() async {
-    if (_selectedContract == null) {
+  // Guarda el archivo PDF localmente
+  Future<void> guardarArchivoLocalmente() async {
+    if (_contratoSeleccionado == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Por favor, selecciona un contrato primero')),
@@ -90,31 +94,33 @@ class _ContractReviewPageState extends State<ContractReviewPage>
       return;
     }
 
-    if (_localPath != null) {
+    if (_rutaLocal != null) {
       try {
-        final file = File(_localPath!);
+        final file = File(_rutaLocal!);
         final fileBytes = await file.readAsBytes();
 
         // Solicitar al usuario que seleccione la ubicación para guardar el archivo
-        String? savePath = await FilePicker.platform.saveFile(
+        String? rutaGuardado = await FilePicker.platform.saveFile(
           dialogTitle: 'Guardar PDF del contrato',
           fileName:
-              'Contrato de ${_selectedContract!.nombres}', // Usar el nombre del contrato actual
+              'Contrato de ${_contratoSeleccionado!.nombres}', // Usar el nombre del contrato actual
         );
 
-        if (savePath != null) {
-          File saveFile = File(savePath);
-          String correctedName =
-              ensurePdfExtension(saveFile.uri.pathSegments.last);
+        if (rutaGuardado != null) {
+          File archivoGuardado = File(rutaGuardado);
+          String nombreCorregido =
+              asegurarExtensionPdf(archivoGuardado.uri.pathSegments.last);
 
-          String correctedFilePath = '${saveFile.parent.path}/$correctedName';
-          File correctedFile = File(correctedFilePath);
+          String rutaArchivoCorregido =
+              '${archivoGuardado.parent.path}/$nombreCorregido';
+          File archivoCorregido = File(rutaArchivoCorregido);
 
-          await correctedFile.writeAsBytes(fileBytes);
+          await archivoCorregido.writeAsBytes(fileBytes);
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text('Archivo guardado exitosamente en: $savePath')),
+                content:
+                    Text('Archivo guardado exitosamente en: $rutaGuardado')),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -136,7 +142,7 @@ class _ContractReviewPageState extends State<ContractReviewPage>
 
   @override
   void dispose() {
-    _tabController?.dispose();
+    _controladorPestanas?.dispose();
     super.dispose();
   }
 
@@ -154,7 +160,7 @@ class _ContractReviewPageState extends State<ContractReviewPage>
             child: Column(
               children: [
                 TabBar(
-                  controller: _tabController,
+                  controller: _controladorPestanas,
                   tabs: const [
                     Tab(text: 'Pendientes'),
                     Tab(text: 'Revisados'),
@@ -166,7 +172,7 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                     children: <Widget>[
                       Expanded(
                         child: TextField(
-                          controller: _searchController,
+                          controller: _controladorBusqueda,
                           decoration: InputDecoration(
                             hintText: 'Buscar contrato',
                             prefixIcon: const Icon(Icons.search),
@@ -174,50 +180,53 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                           ),
-                          onChanged: filterContracts,
+                          onChanged: filtrarContratos,
                         ),
                       ),
                     ],
                   ),
                 ),
                 Expanded(
-                    child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    // Para la pestaña de contratos pendientes
-                    ListView.builder(
-                      itemCount: filteredPendingContracts.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          title: Text(
-                              'Contrato de ${filteredPendingContracts[index].nombres} ${filteredPendingContracts[index].apellidos}'),
-                          onTap: () {
-                            setState(() {
-                              _selectedContract = pendingContracts[index];
-                              downloadFile(); // Llama a downloadFile para descargar el PDF seleccionado
-                            });
-                          },
-                        );
-                      },
-                    ),
+                  child: TabBarView(
+                    controller: _controladorPestanas,
+                    children: [
+                      // Para la pestaña de contratos pendientes
+                      ListView.builder(
+                        itemCount: contratosPendientesFiltrados.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(
+                                'Contrato de ${contratosPendientesFiltrados[index].nombres} ${contratosPendientesFiltrados[index].apellidos}'),
+                            onTap: () {
+                              setState(() {
+                                _contratoSeleccionado =
+                                    contratosPendientes[index];
+                                descargarArchivo(); // Llama a descargarArchivo para descargar el PDF seleccionado
+                              });
+                            },
+                          );
+                        },
+                      ),
 
-                    ListView.builder(
-                      itemCount: filteredReviewedContracts.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          title: Text(
-                              'Contrato de ${filteredReviewedContracts[index].nombres} ${filteredReviewedContracts[index].apellidos}'),
-                          onTap: () {
-                            setState(() {
-                              _selectedContract = reviewedContracts[index];
-                              downloadFile(); // Llama a downloadFile para descargar el PDF seleccionado
-                            });
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ))
+                      ListView.builder(
+                        itemCount: contratosRevisadosFiltrados.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(
+                                'Contrato de ${contratosRevisadosFiltrados[index].nombres} ${contratosRevisadosFiltrados[index].apellidos}'),
+                            onTap: () {
+                              setState(() {
+                                _contratoSeleccionado =
+                                    contratosRevisados[index];
+                                descargarArchivo(); // Llama a descargarArchivo para descargar el PDF seleccionado
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
           ),
@@ -228,9 +237,9 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                 Expanded(
                   flex: 2,
                   child: Center(
-                    child: _localPath == null
+                    child: _rutaLocal == null
                         ? Text("Seleccione un contrato para visualizar el PDF.")
-                        : SfPdfViewer.file(File(_localPath!)),
+                        : SfPdfViewer.file(File(_rutaLocal!)),
                   ),
                 ),
                 Container(
@@ -242,14 +251,14 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                         padding: const EdgeInsets.only(right: 10),
                         child: IconButton(
                           icon: const Icon(Icons.download),
-                          onPressed: _selectedContract != null
-                              ? saveFileLocally
+                          onPressed: _contratoSeleccionado != null
+                              ? guardarArchivoLocalmente
                               : null,
                         ),
                       ),
                       Expanded(
                         child: TextField(
-                          controller: _comentario,
+                          controller: _controladorComentario,
                           decoration: const InputDecoration(
                             labelText: 'Correcciones',
                             border: OutlineInputBorder(),
@@ -259,12 +268,12 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: ElevatedButton(
-                          onPressed: _selectedContract != null &&
-                                  _selectedContract!.estado == 'No Revisado'
+                          onPressed: _contratoSeleccionado != null &&
+                                  _contratoSeleccionado!.estado == 'No Revisado'
                               ? () {
-                                  if (_comentario.text.isNotEmpty) {
-                                    rejectContract(_selectedContract!.id,
-                                        _comentario.text);
+                                  if (_controladorComentario.text.isNotEmpty) {
+                                    rechazarContrato(_contratoSeleccionado!.id,
+                                        _controladorComentario.text);
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
@@ -278,10 +287,10 @@ class _ContractReviewPageState extends State<ContractReviewPage>
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: _selectedContract != null &&
-                                _selectedContract!.estado == 'No Revisado'
+                        onPressed: _contratoSeleccionado != null &&
+                                _contratoSeleccionado!.estado == 'No Revisado'
                             ? () {
-                                validateContract(_selectedContract!
+                                validarContrato(_contratoSeleccionado!
                                     .id); // Asegúrate de pasar el ID correcto
                               }
                             : null,
@@ -298,9 +307,10 @@ class _ContractReviewPageState extends State<ContractReviewPage>
     );
   }
 
-  Future<void> validateContract(String contractId) async {
+  // Valida el contrato enviando el ID al servidor
+  Future<void> validarContrato(String idContrato) async {
     var url = Uri.parse(
-        'https://appatec-back-3c17836d3790.herokuapp.com/update_contract/$contractId');
+        'https://appatec-back-3c17836d3790.herokuapp.com/update_contract/$idContrato');
     try {
       var response = await http.post(url);
       if (response.statusCode == 200) {
@@ -320,9 +330,10 @@ class _ContractReviewPageState extends State<ContractReviewPage>
     }
   }
 
-  Future<void> rejectContract(String contractId, String comentario) async {
+  // Rechaza el contrato enviando el ID y el comentario al servidor
+  Future<void> rechazarContrato(String idContrato, String comentario) async {
     var url = Uri.parse(
-        'https://appatec-back-3c17836d3790.herokuapp.com/reject_contract/$contractId');
+        'https://appatec-back-3c17836d3790.herokuapp.com/reject_contract/$idContrato');
     try {
       var response = await http.post(
         url,
@@ -334,11 +345,7 @@ class _ContractReviewPageState extends State<ContractReviewPage>
           SnackBar(content: Text('Contrato rechazado exitosamente')),
         );
         // Opcional: Actualizar la UI o realizar acciones adicionales
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al rechazar el contrato')),
-        );
-      }
+      } else {}
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al conectar con el servidor: $e')),
@@ -346,32 +353,34 @@ class _ContractReviewPageState extends State<ContractReviewPage>
     }
   }
 
-  List<Contract> filteredPendingContracts = [];
-  List<Contract> filteredReviewedContracts = [];
+  List<Contract> contratosPendientesFiltrados = [];
+  List<Contract> contratosRevisadosFiltrados = [];
 
-  void filterContracts(String query) {
-    List<Contract> sourceList =
-        _tabController?.index == 0 ? pendingContracts : reviewedContracts;
-    List<Contract> targetList = _tabController?.index == 0
-        ? filteredPendingContracts
-        : filteredReviewedContracts;
+  // Filtra los contratos según el texto de búsqueda
+  void filtrarContratos(String consulta) {
+    List<Contract> listaFuente = _controladorPestanas?.index == 0
+        ? contratosPendientes
+        : contratosRevisados;
+    List<Contract> listaDestino = _controladorPestanas?.index == 0
+        ? contratosPendientesFiltrados
+        : contratosRevisadosFiltrados;
 
-    if (query.isEmpty) {
+    if (consulta.isEmpty) {
       setState(() {
-        targetList.clear();
-        targetList.addAll(sourceList);
+        listaDestino.clear();
+        listaDestino.addAll(listaFuente);
       });
     } else {
       List<Contract> tmpList = [];
-      for (Contract contract in sourceList) {
-        if (contract.nombres.toLowerCase().contains(query.toLowerCase()) |
-            contract.apellidos.toLowerCase().contains(query.toLowerCase())) {
-          tmpList.add(contract);
+      for (Contract contrato in listaFuente) {
+        if (contrato.nombres.toLowerCase().contains(consulta.toLowerCase()) ||
+            contrato.apellidos.toLowerCase().contains(consulta.toLowerCase())) {
+          tmpList.add(contrato);
         }
       }
       setState(() {
-        targetList.clear();
-        targetList.addAll(tmpList);
+        listaDestino.clear();
+        listaDestino.addAll(tmpList);
       });
     }
   }

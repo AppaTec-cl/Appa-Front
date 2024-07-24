@@ -24,7 +24,6 @@ class CloudStorageConfig {
         throw Exception('Failed to load credentials: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error loading credentials: $e');
       rethrow;
     }
   }

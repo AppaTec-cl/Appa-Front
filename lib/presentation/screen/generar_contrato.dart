@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+//import 'dart:ui' as ui;
+import 'package:country_picker/country_picker.dart';
 import 'package:ACG/generate/plantilla_analista_quimico.dart';
 import 'package:ACG/generate/plantilla_auxiliar_laboratorio.dart';
 import 'package:ACG/generate/plantilla_tecnico_quimico.dart';
@@ -6,10 +8,13 @@ import 'package:ACG/generate/plantilla_analista_quimico_indef.dart';
 import 'package:ACG/generate/plantilla_auxiliar_laboratorio_indef.dart';
 import 'package:ACG/generate/plantilla_tecnico_quimico_indef.dart';
 import 'package:ACG/dart_rut_validator.dart';
+import 'package:ACG/endpoint/contract.dart';
 import 'package:intl/intl.dart';
 
 class GenerateContractScreen extends StatefulWidget {
-  const GenerateContractScreen({super.key});
+  final String rut;
+
+  const GenerateContractScreen({required this.rut, super.key});
 
   @override
   State<GenerateContractScreen> createState() => _GenerateContractScreenState();
@@ -23,7 +28,7 @@ String _tipoC = 'Analista Quimico';
 
 class _GenerateContractScreenState extends State<GenerateContractScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _salaryKey = GlobalKey<FormState>();
+  //final _salaryKey = GlobalKey<FormState>();
   final TextEditingController _dateControllernaci = TextEditingController();
   final TextEditingController _dateControllerini = TextEditingController();
   final TextEditingController _dateControllerfina =
@@ -43,6 +48,46 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
 
   void onChangedApplyFormat(String text) {
     RUTValidator.formatFromTextController(_rut);
+  }
+
+  void onChangedApplyFormat1(String text) {
+    RUTValidator.formatFromTextController(_rEmpleador);
+  }
+
+  List<Country> countries = [];
+
+  void loadCountries() {
+    countries = CountryService().getAll()
+      ..removeWhere((country) =>
+          country.name == 'South Georgia and the South Sandwich Islands');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadCountries();
+    _rut.text = widget.rut;
+    _fetchContractData(widget.rut);
+  }
+
+  Future<void> _fetchContractData(String rut) async {
+    ContractService service = ContractService();
+    Contract? contract = await service.getContractByRut(rut);
+    if (contract != null) {
+      setState(() {
+        _nombres.text = contract.nombres;
+        _apellidos.text = contract.apellidos;
+        _direccion.text = contract.direccion;
+        _correo.text = contract.mail;
+        _colacion.text = contract.asignacioColacion;
+        _bonoAsistencia.text = contract.bonoAsistencia;
+        _civil = contract.estadoCivil;
+        _nacionalidad = contract.nacionalidad;
+        _salud = contract.sistemaSalud;
+        _afp = contract.afp;
+        _dateControllernaci.text = contract.fechaNacimiento;
+      });
+    }
   }
 
   @override
@@ -236,6 +281,28 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       const SizedBox(height: 20),
       FocusTraversalOrder(
         order: NumericFocusOrder(6),
+        child: DropdownButtonFormField<String>(
+          value: _nacionalidad,
+          onChanged: (value) {
+            setState(() {
+              _nacionalidad = value!;
+            });
+          },
+          items: countries.map((country) {
+            return DropdownMenuItem(
+              value: country.name,
+              child: Text(country.name),
+            );
+          }).toList(),
+          decoration: const InputDecoration(
+            labelText: 'Nacionalidad',
+            border: OutlineInputBorder(),
+          ),
+        ),
+      ),
+      const SizedBox(height: 20),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(7),
         child: TextFormField(
             controller: _rut,
             onChanged: onChangedApplyFormat,
@@ -246,53 +313,33 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
             validator: RUTValidator(validationErrorText: 'Ingrese RUT válido')
                 .validator),
       ),
-    ];
-  }
-
-  List<Widget> _buildWorkDetails() {
-    return [
-      const Text('Información Laboral',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
       const SizedBox(height: 20),
       FocusTraversalOrder(
-        order: NumericFocusOrder(2),
+        order: NumericFocusOrder(8),
         child: TextFormField(
           controller: _correo,
           decoration: const InputDecoration(
             labelText: 'Correo Electrónico',
             border: OutlineInputBorder(),
           ),
-          validator: validateEmail, // Usa el validador de email aquí
-        ),
-      ),
-      const SizedBox(height: 20),
-      FocusTraversalOrder(
-        order: NumericFocusOrder(3),
-        child: DropdownButtonFormField<String>(
-          value: _nacionalidad,
-          onChanged: (value) {
-            setState(() {
-              _nacionalidad = value!;
-            });
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Por favor, ingrese correo electrónico';
+            }
+            return null;
           },
-          items: const [
-            DropdownMenuItem(value: 'Chile', child: Text('Chile')),
-            DropdownMenuItem(value: 'Argentina', child: Text('Argentina')),
-            DropdownMenuItem(value: 'Bolivia', child: Text('Bolivia')),
-            DropdownMenuItem(value: 'Perú', child: Text('Perú')),
-            DropdownMenuItem(value: 'Venezuela', child: Text('Venezuela')),
-            DropdownMenuItem(value: 'Colombia', child: Text('Colombia')),
-            DropdownMenuItem(value: 'Camerún', child: Text('Camerún')),
-          ],
-          decoration: const InputDecoration(
-            labelText: 'Nacionalidad',
-            border: OutlineInputBorder(),
-          ),
         ),
       ),
+    ];
+  }
+
+  List<Widget> _buildWorkDetails() {
+    return [
+      const Text('Datos Laborales',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
       const SizedBox(height: 20),
       FocusTraversalOrder(
-        order: NumericFocusOrder(4),
+        order: NumericFocusOrder(9),
         child: DropdownButtonFormField<String>(
           value: _salud,
           onChanged: (value) {
@@ -312,7 +359,7 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       ),
       const SizedBox(height: 20),
       FocusTraversalOrder(
-        order: NumericFocusOrder(5),
+        order: NumericFocusOrder(10),
         child: DropdownButtonFormField<String>(
           value: _afp,
           onChanged: (value) {
@@ -321,13 +368,12 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
             });
           },
           items: const [
-            DropdownMenuItem(value: 'ProVida', child: Text('AFP ProVida')),
-            DropdownMenuItem(value: 'Modelo', child: Text('AFP Modelo')),
-            DropdownMenuItem(value: 'Capital', child: Text('AFP Capital')),
-            DropdownMenuItem(value: 'Cuprum', child: Text('AFP Cuprum')),
-            DropdownMenuItem(value: 'Planvital', child: Text('AFP Planvital')),
-            DropdownMenuItem(value: 'Habitat', child: Text('AFP Habitat')),
-            DropdownMenuItem(value: 'Uno', child: Text('AFP Uno'))
+            DropdownMenuItem(value: 'ProVida', child: Text('ProVida')),
+            DropdownMenuItem(value: 'Cuprum', child: Text('Cuprum')),
+            DropdownMenuItem(value: 'PlanVital', child: Text('PlanVital')),
+            DropdownMenuItem(value: 'Modelo', child: Text('Modelo')),
+            DropdownMenuItem(value: 'Uno', child: Text('Uno')),
+            DropdownMenuItem(value: 'Habitat', child: Text('Habitat')),
           ],
           decoration: const InputDecoration(
             labelText: 'Previsión AFP',
@@ -336,22 +382,8 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
         ),
       ),
       const SizedBox(height: 20),
-      ElevatedButton(
-        onPressed: () => _employerData(context),
-        style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 50)),
-        child: const Text('Datos del Empleador'),
-      ),
-    ];
-  }
-
-  List<Widget> _buildContractDetails(BuildContext context) {
-    return [
-      const Text('Detalles del Contrato',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 20),
       FocusTraversalOrder(
-        order: NumericFocusOrder(1),
+        order: const NumericFocusOrder(11),
         child: DropdownButtonFormField<String>(
           value: _tipoC,
           onChanged: (value) {
@@ -369,18 +401,18 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
                 value: 'Tecnico Quimico', child: Text('Tecnico Quimico')),
           ],
           decoration: const InputDecoration(
-            labelText: 'Tipo de Cargo',
+            labelText: 'Tipo de Contrato',
             border: OutlineInputBorder(),
           ),
         ),
       ),
       const SizedBox(height: 20),
       FocusTraversalOrder(
-        order: NumericFocusOrder(2),
+        order: NumericFocusOrder(12),
         child: TextFormField(
           controller: _dateControllerini,
           decoration: const InputDecoration(
-            labelText: 'Fecha Inicio Contrato',
+            labelText: 'Fecha de Inicio de Contrato',
             border: OutlineInputBorder(),
           ),
           readOnly: true,
@@ -402,11 +434,11 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       ),
       const SizedBox(height: 20),
       FocusTraversalOrder(
-        order: NumericFocusOrder(3),
+        order: NumericFocusOrder(13),
         child: TextFormField(
           controller: _dateControllerfina,
           decoration: const InputDecoration(
-            labelText: 'Fecha Finalización Contrato',
+            labelText: 'Fecha de Finaliación de Contrato',
             border: OutlineInputBorder(),
           ),
           readOnly: true,
@@ -422,370 +454,270 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
                   DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES')
                       .format(date);
               _dateControllerfina.text = formattedDate;
-            } else {
-              _dateControllerfina.text =
-                  "Indefinido"; // Asigna "Indefinido" si no se selecciona una fecha
             }
           },
         ),
       ),
       const SizedBox(height: 20),
-      ElevatedButton(
-        onPressed: () => _showSalaryDialog(context),
-        style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 50)),
-        child: const Text('Sueldo'),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(14),
+        child: TextFormField(
+          controller: _sueldoBase,
+          decoration: const InputDecoration(
+            labelText: 'Sueldo Base',
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Por favor, ingrese sueldo base';
+            }
+            return null;
+          },
+        ),
       ),
       const SizedBox(height: 20),
-      Row(
-        children: [
-          Checkbox(
-            value: _isChecked,
-            onChanged: (bool? value) {
-              setState(() {
-                _isChecked = value!;
-              });
-            },
+      FocusTraversalOrder(
+        order: NumericFocusOrder(15),
+        child: TextFormField(
+          controller: _colacion,
+          decoration: const InputDecoration(
+            labelText: 'Asignación Colación',
+            border: OutlineInputBorder(),
           ),
-          const Expanded(child: Text('He revisado y confirmo los datos')),
-        ],
+          keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Por favor, ingrese colación';
+            }
+            return null;
+          },
+        ),
       ),
-      const SizedBox(height: 40),
+      const SizedBox(height: 20),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(16),
+        child: TextFormField(
+          controller: _bonoAsistencia,
+          decoration: const InputDecoration(
+            labelText: 'Bono Asistencia',
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Por favor, ingrese bono asistencia';
+            }
+            return null;
+          },
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _buildContractDetails(BuildContext context) {
+    return [
+      const Text('Detalles del Empleador',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 20),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(17),
+        child: TextFormField(
+          controller: _nEmpleador,
+          decoration: const InputDecoration(
+            labelText: 'Nombre del Empleador',
+            border: OutlineInputBorder(),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Por favor, ingrese nombre del empleador';
+            }
+            return null;
+          },
+        ),
+      ),
+      const SizedBox(height: 20),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(18),
+        child: TextFormField(
+          controller: _rEmpleador,
+          onChanged: onChangedApplyFormat1,
+          decoration: const InputDecoration(
+            labelText: 'RUT del Empleador',
+            border: OutlineInputBorder(),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Por favor, ingrese RUT del empleador';
+            }
+            return null;
+          },
+        ),
+      ),
+      const SizedBox(height: 20),
+      CheckboxListTile(
+        title: const Text("Aseguro que los datos son correctos"),
+        value: _isChecked,
+        onChanged: (bool? value) {
+          setState(() {
+            _isChecked = value!;
+          });
+        },
+      ),
+      const SizedBox(height: 20),
       ElevatedButton(
-        onPressed: _isChecked && _formKey.currentState!.validate()
-            ? () async {
-                await generarPdf(
-                    _nombres.text,
-                    _apellidos.text,
-                    _direccion.text,
-                    _civil,
-                    _dateControllernaci.text,
-                    _rut.text,
-                    _correo.text,
-                    _nacionalidad,
-                    _salud,
-                    _afp,
-                    _dateControllerini.text,
-                    _dateControllerfina.text,
-                    _sueldoBase.text,
-                    _colacion.text,
-                    _bonoAsistencia.text,
-                    _nEmpleador.text,
-                    _rEmpleador.text);
-              }
-            : null,
-        style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 50)),
+        onPressed: () {
+          if (_formKey.currentState!.validate() && _isChecked) {
+            _generateContract();
+          } else if (!_isChecked) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Debe aceptar la casilla de verificación'),
+              ),
+            );
+          }
+        },
         child: const Text('Generar Contrato'),
       ),
     ];
   }
 
-  void _employerData(BuildContext context) {
-    // Guardar los valores originales antes de abrir el diálogo
-    String tempNEmpleador = _nEmpleador.text;
-    String tempREmpleador = _rEmpleador.text;
+  Future<void> _generateContract() async {
+    // Otras validaciones necesarias
+    if (_formKey.currentState!.validate()) {
+      String nombres = _nombres.text;
+      String apellidos = _apellidos.text;
+      String direccion = _direccion.text;
+      String civil = _civil;
+      String fechaNacimiento = _dateControllernaci.text;
+      String rut = _rut.text;
+      String correo = _correo.text;
+      String nacionalidad = _nacionalidad;
+      String salud = _salud;
+      String afp = _afp;
+      String fechaInicio = _dateControllerini.text;
+      String fechaFin = _dateControllerfina.text;
+      String sueldoBase = _sueldoBase.text;
+      String colacion = _colacion.text;
+      String bonoAsistencia = _bonoAsistencia.text;
+      String nEmpleador = _nEmpleador.text;
+      String rEmpleador = _rEmpleador.text;
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return SimpleDialog(
-          title: const Text('Detalles del Empleador'),
-          children: <Widget>[
-            SimpleDialogOption(
-              child: TextFormField(
-                controller: _nEmpleador,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre Empleador',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, ingrese el nombre del empleador';
-                  }
-                  return null;
-                },
-              ),
-            ),
-            SimpleDialogOption(
-              child: TextFormField(
-                controller: _rEmpleador,
-                onChanged: onChangedApplyFormat,
-                decoration: const InputDecoration(
-                  labelText: 'RUT Empleador',
-                  border: OutlineInputBorder(),
-                ),
-                validator:
-                    RUTValidator(validationErrorText: 'Ingrese RUT válido')
-                        .validator, // Validador de RUT
-              ),
-            ),
-            SimpleDialogOption(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      // Restaurar los valores originales si se cancela
-                      setState(() {
-                        _nEmpleador.text = tempNEmpleador;
-                        _rEmpleador.text = tempREmpleador;
-                      });
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancelar'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    child: const Text('Guardar'),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showSalaryDialog(BuildContext context) {
-    String tempSueldoBase = _sueldoBase.text;
-    String tempColacion = _colacion.text;
-    String tempBonoAsistencia = _bonoAsistencia.text;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return SimpleDialog(
-          title: const Text('Detalles del Sueldo'),
-          children: <Widget>[
-            Form(
-              key: _salaryKey,
-              child: Column(
-                children: [
-                  SimpleDialogOption(
-                    child: TextFormField(
-                      controller: _sueldoBase,
-                      decoration: const InputDecoration(
-                        labelText: 'Sueldo Base',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, ingrese el sueldo base';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  SimpleDialogOption(
-                    child: TextFormField(
-                      controller: _colacion,
-                      decoration: const InputDecoration(
-                        labelText: 'Asignación de Colación',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, ingrese la asignación de colación';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  SimpleDialogOption(
-                    child: TextFormField(
-                      controller: _bonoAsistencia,
-                      decoration: const InputDecoration(
-                        labelText: 'Bono de Asistencia',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, ingrese el bono de asistencia';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  SimpleDialogOption(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            // Restaurar los valores originales si se cancela
-                            setState(() {
-                              _sueldoBase.text = tempSueldoBase;
-                              _colacion.text = tempColacion;
-                              _bonoAsistencia.text = tempBonoAsistencia;
-                            });
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Cancelar'),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          child: const Text('Guardar'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  String? validateEmail(String? value) {
-    if (value == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-      return 'Formato de correo inválido';
-    }
-    return null;
-  }
-
-  Future<void> generarPdf(
-      String nombres,
-      String apellidos,
-      String direccion,
-      String civil,
-      String fechaNacimiento,
-      String rut,
-      String correo,
-      String nacionalidad,
-      String salud,
-      String afp,
-      String fechaInicio,
-      String fechaFin,
-      String sueldoBase,
-      String colacion,
-      String bonoAsistencia,
-      String nEmpleador,
-      String rEmpleador) async {
-    if (_tipoC == 'Analista Quimico' && fechaFin != 'Indefinido') {
-      await generarPdfAnalistaQ(
-          nombres,
-          apellidos,
-          direccion,
-          civil,
-          fechaNacimiento,
-          rut,
-          correo,
-          nacionalidad,
-          salud,
-          afp,
-          fechaInicio,
-          fechaFin,
-          sueldoBase,
-          colacion,
-          bonoAsistencia,
-          nEmpleador,
-          rEmpleador);
-    } else if (_tipoC == 'Analista Quimico' && fechaFin == 'Indefinido') {
-      await generarPdfAnalistaQIndef(
-          nombres,
-          apellidos,
-          direccion,
-          civil,
-          fechaNacimiento,
-          rut,
-          correo,
-          nacionalidad,
-          salud,
-          afp,
-          fechaInicio,
-          sueldoBase,
-          colacion,
-          bonoAsistencia,
-          nEmpleador,
-          rEmpleador);
-    } else if (_tipoC == 'Auxiliar de Laboratorio' &&
-        fechaFin != 'Indefinido') {
-      await generarPdfAuxiliarL(
-          nombres,
-          apellidos,
-          direccion,
-          civil,
-          fechaNacimiento,
-          rut,
-          correo,
-          nacionalidad,
-          salud,
-          afp,
-          fechaInicio,
-          fechaFin,
-          sueldoBase,
-          colacion,
-          bonoAsistencia,
-          nEmpleador,
-          rEmpleador);
-    } else if (_tipoC == 'Auxiliar de Laboratorio' &&
-        fechaFin == 'Indefinido') {
-      await generarPdfAuxiliarLIndef(
-          nombres,
-          apellidos,
-          direccion,
-          civil,
-          fechaNacimiento,
-          rut,
-          correo,
-          nacionalidad,
-          salud,
-          afp,
-          fechaInicio,
-          sueldoBase,
-          colacion,
-          bonoAsistencia,
-          nEmpleador,
-          rEmpleador);
-    } else if (_tipoC == 'Tecnico Quimico' && fechaFin != 'Indefinido') {
-      await generarPdfTecnicoQ(
-          nombres,
-          apellidos,
-          direccion,
-          civil,
-          fechaNacimiento,
-          rut,
-          correo,
-          nacionalidad,
-          salud,
-          afp,
-          fechaInicio,
-          fechaFin,
-          sueldoBase,
-          colacion,
-          bonoAsistencia,
-          nEmpleador,
-          rEmpleador);
-    } else if (_tipoC == 'Tecnico Quimico' && fechaFin == 'Indefinido') {
-      await generarPdfTecnicoQIndef(
-          nombres,
-          apellidos,
-          direccion,
-          civil,
-          fechaNacimiento,
-          rut,
-          correo,
-          nacionalidad,
-          salud,
-          afp,
-          fechaInicio,
-          sueldoBase,
-          colacion,
-          bonoAsistencia,
-          nEmpleador,
-          rEmpleador);
+      // Llamada a la función para generar el contrato en formato PDF
+      if (_tipoC == 'Analista Quimico' && fechaFin != 'Indefinido') {
+        await generarPdfAnalistaQ(
+            nombres,
+            apellidos,
+            direccion,
+            civil,
+            fechaNacimiento,
+            rut,
+            correo,
+            nacionalidad,
+            salud,
+            afp,
+            fechaInicio,
+            fechaFin,
+            sueldoBase,
+            colacion,
+            bonoAsistencia,
+            nEmpleador,
+            rEmpleador);
+      } else if (_tipoC == 'Analista Quimico' && fechaFin == 'Indefinido') {
+        await generarPdfAnalistaQIndef(
+            nombres,
+            apellidos,
+            direccion,
+            civil,
+            fechaNacimiento,
+            rut,
+            correo,
+            nacionalidad,
+            salud,
+            afp,
+            fechaInicio,
+            sueldoBase,
+            colacion,
+            bonoAsistencia,
+            nEmpleador,
+            rEmpleador);
+      } else if (_tipoC == 'Auxiliar de Laboratorio' &&
+          fechaFin != 'Indefinido') {
+        await generarPdfAuxiliarL(
+            nombres,
+            apellidos,
+            direccion,
+            civil,
+            fechaNacimiento,
+            rut,
+            correo,
+            nacionalidad,
+            salud,
+            afp,
+            fechaInicio,
+            fechaFin,
+            sueldoBase,
+            colacion,
+            bonoAsistencia,
+            nEmpleador,
+            rEmpleador);
+      } else if (_tipoC == 'Auxiliar de Laboratorio' &&
+          fechaFin == 'Indefinido') {
+        await generarPdfAuxiliarLIndef(
+            nombres,
+            apellidos,
+            direccion,
+            civil,
+            fechaNacimiento,
+            rut,
+            correo,
+            nacionalidad,
+            salud,
+            afp,
+            fechaInicio,
+            sueldoBase,
+            colacion,
+            bonoAsistencia,
+            nEmpleador,
+            rEmpleador);
+      } else if (_tipoC == 'Tecnico Quimico' && fechaFin != 'Indefinido') {
+        await generarPdfTecnicoQ(
+            nombres,
+            apellidos,
+            direccion,
+            civil,
+            fechaNacimiento,
+            rut,
+            correo,
+            nacionalidad,
+            salud,
+            afp,
+            fechaInicio,
+            fechaFin,
+            sueldoBase,
+            colacion,
+            bonoAsistencia,
+            nEmpleador,
+            rEmpleador);
+      } else if (_tipoC == 'Tecnico Quimico' && fechaFin == 'Indefinido') {
+        await generarPdfTecnicoQIndef(
+            nombres,
+            apellidos,
+            direccion,
+            civil,
+            fechaNacimiento,
+            rut,
+            correo,
+            nacionalidad,
+            salud,
+            afp,
+            fechaInicio,
+            sueldoBase,
+            colacion,
+            bonoAsistencia,
+            nEmpleador,
+            rEmpleador);
+      }
     }
   }
 }

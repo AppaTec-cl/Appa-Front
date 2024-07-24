@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ACG/presentation/screen/generar_contrato.dart';
 import 'package:ACG/presentation/screen/mensajes_contratos.dart';
-import 'package:ACG/presentation/screen/anexo.dart';
+import 'package:ACG/dart_rut_validator.dart';
 
 class InicioJefe extends StatelessWidget {
   @override
@@ -39,14 +39,7 @@ class InicioJefe extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const GenerateContractScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: () => _showRutDialog(context),
                   child: const Text('Generar Contrato'),
                 ),
                 const SizedBox(height: 20),
@@ -66,6 +59,60 @@ class InicioJefe extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showRutDialog(BuildContext context) {
+    final TextEditingController rutController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    void onChangedApplyFormat(String text) {
+      RUTValidator.formatFromTextController(rutController);
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Ingresar RUT del Trabajador'),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: rutController,
+              onChanged: onChangedApplyFormat,
+              decoration: const InputDecoration(
+                labelText: 'RUT',
+                border: OutlineInputBorder(),
+              ),
+              validator: RUTValidator(validationErrorText: 'Ingrese RUT válido')
+                  .validator,
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Aceptar'),
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  String rut = rutController.text;
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => GenerateContractScreen(rut: rut),
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

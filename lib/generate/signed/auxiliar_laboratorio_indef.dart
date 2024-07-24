@@ -9,13 +9,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:googleapis_auth/auth_io.dart';
 import 'package:ACG/endpoint/config.dart';
 import 'package:ACG/endpoint/contract.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 Future<void> uploadFileToGoogleCloud(String filePath) async {
   var client = await CloudStorageConfig.getClient();
   var bucketName = 'almacenamiento_pdf';
   var fileToUpload = File(filePath);
   var media = storage.Media(fileToUpload.openRead(), fileToUpload.lengthSync());
-  var destination = 'contratos/${fileToUpload.uri.pathSegments.last}';
+  var destination = 'contratos_firmados/${fileToUpload.uri.pathSegments.last}';
 
   try {
     var insertRequest = storage.Object()
@@ -36,7 +38,16 @@ Future<Uint8List> loadAsset(String path) async {
   return data.buffer.asUint8List();
 }
 
-Future<void> generarPdfAuxiliarL(
+Future<Uint8List> downloadImage(String url) async {
+  final response = await http.get(Uri.parse(url));
+  if (response.statusCode == 200) {
+    return response.bodyBytes;
+  } else {
+    throw Exception('Failed to download image: ${response.statusCode}');
+  }
+}
+
+Future<void> generarPdfAuxiliarLIndef(
     nombres,
     apellidos,
     direccion,
@@ -48,13 +59,19 @@ Future<void> generarPdfAuxiliarL(
     salud,
     afp,
     inicio,
-    finalizacion,
     sueldoBase,
     colacion,
     bonoAsistencia,
     nEmpleador,
-    rEmpleador) async {
+    rEmpleador,
+    urlImagen,
+    idContrato) async {
   final pdf = pw.Document();
+
+  String result = await urlImagen;
+  final imageData = await downloadImage(result);
+
+  final sign = pw.MemoryImage(imageData);
 
   final watermarkData = await loadAsset('assets/img/logo.png');
   final image = pw.MemoryImage(watermarkData);
@@ -759,7 +776,7 @@ Future<void> generarPdfAuxiliarL(
                         fontWeight: pw.FontWeight.bold, fontSize: 13)),
                 pw.Text(
                     'Se deja expresa constancia de que el trabajador ingresa al servicio de la empresa el $inicio y que la '
-                    'duración del presente contrato será hasta el $finalizacion inclusive.\n\n',
+                    'duración del presente contrato será indefinido.\n\n',
                     style: const pw.TextStyle(fontSize: 11),
                     textAlign: pw.TextAlign.justify),
                 pw.Text(
@@ -834,6 +851,7 @@ Future<void> generarPdfAuxiliarL(
                   children: [
                     pw.Column(
                       children: [
+                        pw.Image(sign, width: 150),
                         pw.Container(
                           width: 150,
                           child: pw.Divider(),
@@ -892,79 +910,30 @@ Future<void> generarPdfAuxiliarL(
       // Subir el archivo con el nombre corregido a Google Cloud Storage
       await uploadFileToGoogleCloud(correctedFilePath);
       var publicUrl =
-          'https://storage.googleapis.com/almacenamiento_pdf/contratos/$correctedFileName';
+          'https://storage.googleapis.com/almacenamiento_pdf/contratos_firmados/$correctedFileName';
 
-      Future<String> getCurrentUserId() async {
-        final prefs = await SharedPreferences.getInstance();
-        return prefs.getString('userId') ?? 'default_user_id';
-      }
-
-      void initiateContractCreation(
-          inicio,
-          finalizacion,
-          publicUrl,
-          nombres,
-          apellidos,
-          direccion,
-          civil,
-          nacimiento,
-          rut,
-          correo,
-          nacionalidad,
-          salud,
-          afp,
-          nEmpleador,
-          rEmpleador,
-          sueldoBase,
-          colacion,
-          bonoAsistencia) async {
-        String userId = await getCurrentUserId(); // Recupera el ID del usuario
-        createAndSubmitContract(
-            inicio,
-            finalizacion,
-            publicUrl,
-            userId,
-            nombres,
-            apellidos,
-            direccion,
-            civil,
-            nacimiento,
-            rut,
-            correo,
-            nacionalidad,
-            salud,
-            afp,
-            nEmpleador,
-            rEmpleador,
-            'Analista Quimico',
-            inicio,
-            finalizacion,
-            sueldoBase,
-            colacion,
-            bonoAsistencia);
-      }
-
-      initiateContractCreation(
-          inicio,
-          finalizacion,
-          publicUrl,
-          nombres,
-          apellidos,
-          direccion,
-          civil,
-          nacimiento,
-          rut,
-          correo,
-          nacionalidad,
-          salud,
-          afp,
-          nEmpleador,
-          rEmpleador,
-          sueldoBase,
-          colacion,
-          bonoAsistencia);
+      // Enviar el contrato a la API
+      await enviarContrato(publicUrl, idContrato);
     }
   }
 
   manageFileUpload(nombres);
+}
+
+Future<void> enviarContrato(String contrato, String id) async {
+  try {
+    final response = await http.post(
+      Uri.parse(
+          'https://appatec-back-3c17836d3790.herokuapp.com/link_sign/$id'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'contrato': contrato,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+    } else {}
+  } catch (e) {}
 }

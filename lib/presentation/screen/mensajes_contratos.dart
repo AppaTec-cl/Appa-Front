@@ -35,10 +35,7 @@ class _ContractReviewPageState extends State<ContractReviewPage> {
       setState(() {
         contracts = data;
       });
-      print('Contracts loaded: ${contracts.length}');
-    }).catchError((error) {
-      print('Error fetching contracts: $error');
-    });
+    }).catchError((error) {});
   }
 
   Future<void> downloadFile() async {

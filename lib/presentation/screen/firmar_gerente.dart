@@ -3,6 +3,11 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:ACG/endpoint/contract.dart';
 import 'package:ACG/generate/signed/analista_quimico.dart';
+import 'package:ACG/generate/signed/analista_quimico_indef.dart';
+import 'package:ACG/generate/signed/auxiliar_laboratorio.dart';
+import 'package:ACG/generate/signed/auxiliar_laboratorio_indef.dart';
+import 'package:ACG/generate/signed/tecnico_quimico.dart';
+import 'package:ACG/generate/signed/tecnico_quimico_indef.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,52 +15,54 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:convert';
 
-class GerentPage extends StatefulWidget {
-  const GerentPage({super.key});
+// Página de Gerente para revisar contratos
+class PaginaGerente extends StatefulWidget {
+  const PaginaGerente({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _GerentPageState createState() => _GerentPageState();
+  _EstadoPaginaGerente createState() => _EstadoPaginaGerente();
 }
 
-class _GerentPageState extends State<GerentPage>
+class _EstadoPaginaGerente extends State<PaginaGerente>
     with SingleTickerProviderStateMixin {
-  String? _localPath;
+  String? _rutaLocal;
 
-  late int randomNumber;
-  Contract? _selectedContract;
+  Contract? _contratoSeleccionado;
 
-  final TextEditingController _comentario = TextEditingController();
-  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _controladorComentario = TextEditingController();
+  final TextEditingController _controladorBusqueda = TextEditingController();
 
-  List<Contract> pendingContracts = [];
-  List<Contract> reviewedContracts = [];
+  List<Contract> contratosPendientes = [];
+  List<Contract> contratosRevisados = [];
 
-  TabController? _tabController;
+  TabController? _controladorPestanas;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController?.addListener(() {
+    _controladorPestanas = TabController(length: 2, vsync: this);
+    _controladorPestanas?.addListener(() {
       // Limpia el campo de búsqueda al cambiar de pestaña
-      _searchController.clear();
-      filterContracts(''); // Refresca la lista filtrada según la pestaña activa
+      _controladorBusqueda.clear();
+      filtrarContratos(
+          ''); // Refresca la lista filtrada según la pestaña activa
     });
     fetchContracts("Revisado").then((data) {
       setState(() {
-        pendingContracts = data;
+        contratosPendientes = data;
       });
     });
     fetchContracts("Revisado Gerente").then((data) {
       setState(() {
-        reviewedContracts = data;
+        contratosRevisados = data;
       });
     });
   }
 
-  Future<void> downloadFile() async {
-    if (_selectedContract == null || _selectedContract!.contratoUrl.isEmpty) {
+  // Descarga el archivo PDF del contrato seleccionado
+  Future<void> descargarArchivo() async {
+    if (_contratoSeleccionado == null ||
+        _contratoSeleccionado!.contratoUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Por favor, selecciona un contrato primero')),
@@ -63,11 +70,11 @@ class _GerentPageState extends State<GerentPage>
       return;
     }
 
-    final url =
-        _selectedContract!.contratoUrl; // URL del PDF del contrato seleccionado
+    final url = _contratoSeleccionado!
+        .contratoUrl; // URL del PDF del contrato seleccionado
     try {
       final fileInfo = await DefaultCacheManager().downloadFile(url);
-      _localPath = fileInfo.file.path;
+      _rutaLocal = fileInfo.file.path;
       setState(() {});
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -76,16 +83,17 @@ class _GerentPageState extends State<GerentPage>
     }
   }
 
-  String ensurePdfExtension(String fileName) {
-    // Asegurarse de que el nombre del archivo termina con '.pdf'
-    if (!fileName.toLowerCase().endsWith('.pdf')) {
-      fileName += '.pdf'; // Agregar la extensión .pdf si no está presente
+  // Asegura que el nombre del archivo tenga la extensión '.pdf'
+  String asegurarExtensionPdf(String nombreArchivo) {
+    if (!nombreArchivo.toLowerCase().endsWith('.pdf')) {
+      nombreArchivo += '.pdf'; // Agregar la extensión .pdf si no está presente
     }
-    return fileName;
+    return nombreArchivo;
   }
 
-  Future<void> saveFileLocally() async {
-    if (_selectedContract == null) {
+  // Guarda el archivo PDF localmente
+  Future<void> guardarArchivoLocalmente() async {
+    if (_contratoSeleccionado == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Por favor, selecciona un contrato primero')),
@@ -93,31 +101,33 @@ class _GerentPageState extends State<GerentPage>
       return;
     }
 
-    if (_localPath != null) {
+    if (_rutaLocal != null) {
       try {
-        final file = File(_localPath!);
+        final file = File(_rutaLocal!);
         final fileBytes = await file.readAsBytes();
 
         // Solicitar al usuario que seleccione la ubicación para guardar el archivo
-        String? savePath = await FilePicker.platform.saveFile(
+        String? rutaGuardado = await FilePicker.platform.saveFile(
           dialogTitle: 'Guardar PDF del contrato',
           fileName:
-              'Contrato de ${_selectedContract!.nombres}', // Usar el nombre del contrato actual
+              'Contrato de ${_contratoSeleccionado!.nombres}', // Usar el nombre del contrato actual
         );
 
-        if (savePath != null) {
-          File saveFile = File(savePath);
-          String correctedName =
-              ensurePdfExtension(saveFile.uri.pathSegments.last);
+        if (rutaGuardado != null) {
+          File archivoGuardado = File(rutaGuardado);
+          String nombreCorregido =
+              asegurarExtensionPdf(archivoGuardado.uri.pathSegments.last);
 
-          String correctedFilePath = '${saveFile.parent.path}/$correctedName';
-          File correctedFile = File(correctedFilePath);
+          String rutaArchivoCorregido =
+              '${archivoGuardado.parent.path}/$nombreCorregido';
+          File archivoCorregido = File(rutaArchivoCorregido);
 
-          await correctedFile.writeAsBytes(fileBytes);
+          await archivoCorregido.writeAsBytes(fileBytes);
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text('Archivo guardado exitosamente en: $savePath')),
+                content:
+                    Text('Archivo guardado exitosamente en: $rutaGuardado')),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -139,7 +149,7 @@ class _GerentPageState extends State<GerentPage>
 
   @override
   void dispose() {
-    _tabController?.dispose();
+    _controladorPestanas?.dispose();
     super.dispose();
   }
 
@@ -157,7 +167,7 @@ class _GerentPageState extends State<GerentPage>
             child: Column(
               children: [
                 TabBar(
-                  controller: _tabController,
+                  controller: _controladorPestanas,
                   tabs: const [
                     Tab(text: 'Pendientes'),
                     Tab(text: 'Revisados'),
@@ -169,7 +179,7 @@ class _GerentPageState extends State<GerentPage>
                     children: <Widget>[
                       Expanded(
                         child: TextField(
-                          controller: _searchController,
+                          controller: _controladorBusqueda,
                           decoration: InputDecoration(
                             hintText: 'Buscar contrato',
                             prefixIcon: const Icon(Icons.search),
@@ -177,50 +187,53 @@ class _GerentPageState extends State<GerentPage>
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                           ),
-                          onChanged: filterContracts,
+                          onChanged: filtrarContratos,
                         ),
                       ),
                     ],
                   ),
                 ),
                 Expanded(
-                    child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    // Para la pestaña de contratos pendientes
-                    ListView.builder(
-                      itemCount: filteredPendingContracts.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          title: Text(
-                              'Contrato de ${filteredPendingContracts[index].nombres} ${filteredPendingContracts[index].apellidos}'),
-                          onTap: () {
-                            setState(() {
-                              _selectedContract = pendingContracts[index];
-                              downloadFile(); // Llama a downloadFile para descargar el PDF seleccionado
-                            });
-                          },
-                        );
-                      },
-                    ),
+                  child: TabBarView(
+                    controller: _controladorPestanas,
+                    children: [
+                      // Para la pestaña de contratos pendientes
+                      ListView.builder(
+                        itemCount: contratosPendientesFiltrados.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(
+                                'Contrato de ${contratosPendientesFiltrados[index].nombres} ${contratosPendientesFiltrados[index].apellidos}'),
+                            onTap: () {
+                              setState(() {
+                                _contratoSeleccionado =
+                                    contratosPendientes[index];
+                                descargarArchivo(); // Llama a descargarArchivo para descargar el PDF seleccionado
+                              });
+                            },
+                          );
+                        },
+                      ),
 
-                    ListView.builder(
-                      itemCount: filteredReviewedContracts.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          title: Text(
-                              'Contrato de ${filteredReviewedContracts[index].nombres} ${filteredReviewedContracts[index].apellidos}'),
-                          onTap: () {
-                            setState(() {
-                              _selectedContract = reviewedContracts[index];
-                              downloadFile(); // Llama a downloadFile para descargar el PDF seleccionado
-                            });
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ))
+                      ListView.builder(
+                        itemCount: contratosRevisadosFiltrados.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(
+                                'Contrato de ${contratosRevisadosFiltrados[index].nombres} ${contratosRevisadosFiltrados[index].apellidos}'),
+                            onTap: () {
+                              setState(() {
+                                _contratoSeleccionado =
+                                    contratosRevisados[index];
+                                descargarArchivo(); // Llama a descargarArchivo para descargar el PDF seleccionado
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
           ),
@@ -231,9 +244,9 @@ class _GerentPageState extends State<GerentPage>
                 Expanded(
                   flex: 2,
                   child: Center(
-                    child: _localPath == null
+                    child: _rutaLocal == null
                         ? Text("Seleccione un contrato para visualizar el PDF.")
-                        : SfPdfViewer.file(File(_localPath!)),
+                        : SfPdfViewer.file(File(_rutaLocal!)),
                   ),
                 ),
                 Container(
@@ -245,14 +258,14 @@ class _GerentPageState extends State<GerentPage>
                         padding: const EdgeInsets.only(right: 10),
                         child: IconButton(
                           icon: const Icon(Icons.download),
-                          onPressed: _selectedContract != null
-                              ? saveFileLocally
+                          onPressed: _contratoSeleccionado != null
+                              ? guardarArchivoLocalmente
                               : null,
                         ),
                       ),
                       Expanded(
                         child: TextField(
-                          controller: _comentario,
+                          controller: _controladorComentario,
                           decoration: const InputDecoration(
                             labelText: 'Correcciones',
                             border: OutlineInputBorder(),
@@ -262,12 +275,12 @@ class _GerentPageState extends State<GerentPage>
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: ElevatedButton(
-                          onPressed: _selectedContract != null &&
-                                  _selectedContract!.estado == 'Revisado'
+                          onPressed: _contratoSeleccionado != null &&
+                                  _contratoSeleccionado!.estado == 'Revisado'
                               ? () {
-                                  if (_comentario.text.isNotEmpty) {
-                                    rejectContract(_selectedContract!.id,
-                                        _comentario.text);
+                                  if (_controladorComentario.text.isNotEmpty) {
+                                    rechazarContrato(_contratoSeleccionado!.id,
+                                        _controladorComentario.text);
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
@@ -281,29 +294,31 @@ class _GerentPageState extends State<GerentPage>
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: _selectedContract != null &&
-                                _selectedContract!.estado == 'Revisado'
-                            ? generarPdfAnalistaQ(
-                                _selectedContract?.nombres,
-                                _selectedContract?.apellidos,
-                                _selectedContract?.direccion,
-                                _selectedContract?.estadoCivil,
-                                _selectedContract?.fechaNacimiento,
-                                _selectedContract?.rut,
-                                _selectedContract?.mail,
-                                _selectedContract?.nacionalidad,
-                                _selectedContract?.sistemaSalud,
-                                _selectedContract?.afp,
-                                _selectedContract?.fechaInicioTrabajo,
-                                _selectedContract?.fechaFinalTrabajo,
-                                _selectedContract?.sueldoBase,
-                                _selectedContract?.asignacioColacion,
-                                _selectedContract?.bonoAsistencia,
-                                _selectedContract?.nombreEmpleador,
-                                _selectedContract?.rutEmpleador,
-                                getSignatureLink(),
-                                _selectedContract?.id,
-                              )
+                        onPressed: _contratoSeleccionado != null &&
+                                _contratoSeleccionado!.estado == 'Revisado'
+                            ? () async {
+                                await generarPdf(
+                                  _contratoSeleccionado!.nombres,
+                                  _contratoSeleccionado!.apellidos,
+                                  _contratoSeleccionado!.direccion,
+                                  _contratoSeleccionado!.estadoCivil,
+                                  _contratoSeleccionado!.fechaNacimiento,
+                                  _contratoSeleccionado!.rut,
+                                  _contratoSeleccionado!.mail,
+                                  _contratoSeleccionado!.nacionalidad,
+                                  _contratoSeleccionado!.sistemaSalud,
+                                  _contratoSeleccionado!.afp,
+                                  _contratoSeleccionado!.fechaInicioTrabajo,
+                                  _contratoSeleccionado!.fechaFinalTrabajo,
+                                  _contratoSeleccionado!.sueldoBase,
+                                  _contratoSeleccionado!.asignacioColacion,
+                                  _contratoSeleccionado!.bonoAsistencia,
+                                  _contratoSeleccionado!.nombreEmpleador,
+                                  _contratoSeleccionado!.rutEmpleador,
+                                  obtenerEnlaceFirma(),
+                                  _contratoSeleccionado!.id,
+                                );
+                              }
                             : null,
                         child: const Text('Firmar'),
                       )
@@ -318,9 +333,10 @@ class _GerentPageState extends State<GerentPage>
     );
   }
 
-  Future<void> validateContract(String contractId) async {
+  // Valida el contrato enviando el ID al servidor
+  Future<void> validarContrato(String idContrato) async {
     var url = Uri.parse(
-        'https://appatec-back-3c17836d3790.herokuapp.com/update_contract_gerent/$contractId');
+        'https://appatec-back-3c17836d3790.herokuapp.com/update_contract_gerent/$idContrato');
     try {
       var response = await http.post(url);
       if (response.statusCode == 200) {
@@ -340,9 +356,10 @@ class _GerentPageState extends State<GerentPage>
     }
   }
 
-  Future<void> rejectContract(String contractId, String comentario) async {
+  // Rechaza el contrato enviando el ID y el comentario al servidor
+  Future<void> rechazarContrato(String idContrato, String comentario) async {
     var url = Uri.parse(
-        'https://appatec-back-3c17836d3790.herokuapp.com/reject_contract_gerent/$contractId');
+        'https://appatec-back-3c17836d3790.herokuapp.com/reject_contract_gerent/$idContrato');
     try {
       var response = await http.post(
         url,
@@ -366,40 +383,43 @@ class _GerentPageState extends State<GerentPage>
     }
   }
 
-  List<Contract> filteredPendingContracts = [];
-  List<Contract> filteredReviewedContracts = [];
+  List<Contract> contratosPendientesFiltrados = [];
+  List<Contract> contratosRevisadosFiltrados = [];
 
-  void filterContracts(String query) {
-    List<Contract> sourceList =
-        _tabController?.index == 0 ? pendingContracts : reviewedContracts;
-    List<Contract> targetList = _tabController?.index == 0
-        ? filteredPendingContracts
-        : filteredReviewedContracts;
+  // Filtra los contratos según el texto de búsqueda
+  void filtrarContratos(String consulta) {
+    List<Contract> listaFuente = _controladorPestanas?.index == 0
+        ? contratosPendientes
+        : contratosRevisados;
+    List<Contract> listaDestino = _controladorPestanas?.index == 0
+        ? contratosPendientesFiltrados
+        : contratosRevisadosFiltrados;
 
-    if (query.isEmpty) {
+    if (consulta.isEmpty) {
       setState(() {
-        targetList.clear();
-        targetList.addAll(sourceList);
+        listaDestino.clear();
+        listaDestino.addAll(listaFuente);
       });
     } else {
       List<Contract> tmpList = [];
-      for (Contract contract in sourceList) {
-        if (contract.nombres.toLowerCase().contains(query.toLowerCase()) |
-            contract.apellidos.toLowerCase().contains(query.toLowerCase())) {
-          tmpList.add(contract);
+      for (Contract contrato in listaFuente) {
+        if (contrato.nombres.toLowerCase().contains(consulta.toLowerCase()) ||
+            contrato.apellidos.toLowerCase().contains(consulta.toLowerCase())) {
+          tmpList.add(contrato);
         }
       }
       setState(() {
-        targetList.clear();
-        targetList.addAll(tmpList);
+        listaDestino.clear();
+        listaDestino.addAll(tmpList);
       });
     }
   }
 
-  Future<String?> getSignatureLink() async {
+  // Obtiene el enlace de la firma
+  Future<String?> obtenerEnlaceFirma() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getString('userId') ?? 'default_user_id';
+      final idUsuario = prefs.getString('userId') ?? 'default_user_id';
 
       final response = await http.post(
         Uri.parse('https://appatec-back-3c17836d3790.herokuapp.com/sign'),
@@ -407,21 +427,181 @@ class _GerentPageState extends State<GerentPage>
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
-          'id_usuario': userId,
+          'id_usuario': idUsuario,
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data[
-            'firma']; // Suponiendo que 'firma' es la clave que contiene el link
+            'firma']; // Suponiendo que 'firma' es la clave que contiene el enlace
       } else {
         throw Exception(
             'Failed to fetch signature link: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error obtaining signature link: $e');
       return null;
+    }
+  }
+
+  // Valida el formato del correo electrónico
+  String? validarCorreo(String? valor) {
+    if (valor == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(valor)) {
+      return 'Formato de correo inválido';
+    }
+    return null;
+  }
+
+  // Genera el PDF del contrato según el cargo y la duración del trabajo
+  Future<void> generarPdf(
+      String nombres,
+      String apellidos,
+      String direccion,
+      String civil,
+      String fechaNacimiento,
+      String rut,
+      String correo,
+      String nacionalidad,
+      String salud,
+      String afp,
+      String fechaInicio,
+      String fechaFin,
+      String sueldoBase,
+      String colacion,
+      String bonoAsistencia,
+      String nombreEmpleador,
+      String rutEmpleador,
+      urlImagen,
+      String idContrato) async {
+    if (_contratoSeleccionado?.cargo == 'Analista Quimico' &&
+        _contratoSeleccionado?.fechaFinalTrabajo != 'Indefinido') {
+      await generarPdfAnalistaQ(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          fechaFin,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nombreEmpleador,
+          rutEmpleador,
+          urlImagen,
+          idContrato);
+    } else if (_contratoSeleccionado?.cargo == 'Analista Quimico' &&
+        _contratoSeleccionado?.fechaFinalTrabajo == 'Indefinido') {
+      await generarPdfAnalistaQIndef(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nombreEmpleador,
+          rutEmpleador,
+          urlImagen,
+          idContrato);
+    } else if (_contratoSeleccionado?.cargo == 'Auxiliar Laboratorio' &&
+        _contratoSeleccionado?.fechaFinalTrabajo != 'Indefinido') {
+      await generarPdfAuxiliarL(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          fechaFin,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nombreEmpleador,
+          rutEmpleador,
+          urlImagen,
+          idContrato);
+    } else if (_contratoSeleccionado?.cargo == 'Auxiliar Laboratorio' &&
+        _contratoSeleccionado?.fechaFinalTrabajo == 'Indefinido') {
+      await generarPdfAuxiliarLIndef(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nombreEmpleador,
+          rutEmpleador,
+          urlImagen,
+          idContrato);
+    } else if (_contratoSeleccionado?.cargo == 'Tecnico Quimico' &&
+        _contratoSeleccionado?.fechaFinalTrabajo != 'Indefinido') {
+      await generarPdfTecnicoQ(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          fechaFin,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nombreEmpleador,
+          rutEmpleador,
+          urlImagen,
+          idContrato);
+    } else if (_contratoSeleccionado?.cargo == 'Tecnico Quimico' &&
+        _contratoSeleccionado?.fechaFinalTrabajo == 'Indefinido') {
+      await generarPdfTecnicoQIndef(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nombreEmpleador,
+          rutEmpleador,
+          urlImagen,
+          idContrato);
     }
   }
 }

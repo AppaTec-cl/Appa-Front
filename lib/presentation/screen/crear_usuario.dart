@@ -10,102 +10,102 @@ import 'package:http/http.dart' as http;
 import 'package:ACG/dart_rut_validator.dart';
 import 'package:flutter/services.dart';
 
-class UserAPI {
-  static Future<void> sendUserData(String jsonData) async {
+// Clase API para enviar datos del usuario al servidor
+class UsuarioAPI {
+  static Future<void> enviarDatosUsuario(String datosJson) async {
     var url = Uri.parse(
         'https://appatec-back-3c17836d3790.herokuapp.com/submit_form');
     var response = await http.post(url,
-        body: jsonData, headers: {'Content-Type': 'application/json'});
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
+        body: datosJson, headers: {'Content-Type': 'application/json'});
     if (response.statusCode == 200) {
-      return; // Success
+      return; // Éxito
     } else {
-      throw Exception('Failed to send data'); // Error
+      throw Exception('Error al enviar datos'); // Error
     }
   }
 }
 
-class UserFormScreen extends StatefulWidget {
+// Pantalla del formulario de usuario
+class PantallaFormularioUsuario extends StatefulWidget {
   @override
-  _UserFormScreenState createState() => _UserFormScreenState();
+  _EstadoPantallaFormularioUsuario createState() =>
+      _EstadoPantallaFormularioUsuario();
 }
 
-class _UserFormScreenState extends State<UserFormScreen> {
-  bool validateRut(String rut) {
+class _EstadoPantallaFormularioUsuario
+    extends State<PantallaFormularioUsuario> {
+  bool validarRut(String rut) {
     RegExp regExp = RegExp(r'^\d{8}-\d{1}$');
     return regExp.hasMatch(rut);
   }
 
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _rutController = TextEditingController();
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNamePController = TextEditingController();
-  final TextEditingController _lastNameMController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  String? _selectedRole;
-  final SignatureController _signatureController = SignatureController(
+  final _claveFormulario = GlobalKey<FormState>();
+  final TextEditingController _controladorRut = TextEditingController();
+  final TextEditingController _controladorNombres = TextEditingController();
+  final TextEditingController _controladorApellidoP = TextEditingController();
+  final TextEditingController _controladorApellidoM = TextEditingController();
+  final TextEditingController _controladorCorreo = TextEditingController();
+  final TextEditingController _controladorContrasena = TextEditingController();
+  String? _rolSeleccionado;
+  final SignatureController _controladorFirma = SignatureController(
     penStrokeWidth: 1,
     penColor: Colors.black,
   );
 
-  bool _isLoading = false;
-  bool _isGeneralManager = false;
-  Uint8List? _signatureBytes;
+  bool _estaCargando = false;
+  bool _esGerenteGeneral = false;
+  Uint8List? _firmaBytes;
 
-  Future<void> _saveSignatureTemporarily() async {
-    if (_signatureController.isNotEmpty) {
-      final signature = await _signatureController.toPngBytes();
-      if (signature != null) {
+  // Guarda la firma temporalmente en el dispositivo
+  Future<void> _guardarFirmaTemporalmente() async {
+    if (_controladorFirma.isNotEmpty) {
+      final firma = await _controladorFirma.toPngBytes();
+      if (firma != null) {
         setState(() {
-          _signatureBytes = signature;
+          _firmaBytes = firma;
         });
       }
     }
   }
 
-  Future<String?> _uploadSignatureToGoogleCloud(String userName) async {
-    if (_signatureBytes != null) {
-      final directory = await getTemporaryDirectory();
-      final imagePath = '${directory.path}/firma_$userName.png';
-      final imageFile = File(imagePath);
-      await imageFile.writeAsBytes(_signatureBytes!);
+  // Sube la firma a Google Cloud Storage
+  Future<String?> _subirFirmaAGoogleCloud(String nombreUsuario) async {
+    if (_firmaBytes != null) {
+      final directorio = await getTemporaryDirectory();
+      final rutaImagen = '${directorio.path}/firma_$nombreUsuario.png';
+      final archivoImagen = File(rutaImagen);
+      await archivoImagen.writeAsBytes(_firmaBytes!);
 
-      var client = await CloudStorageConfig.getClient();
-      var bucketName = 'almacenamiento_pdf';
-      var fileToUpload = File(imagePath);
+      var cliente = await CloudStorageConfig.getClient();
+      var nombreBucket = 'almacenamiento_pdf';
+      var archivoASubir = File(rutaImagen);
       var media =
-          storage.Media(fileToUpload.openRead(), fileToUpload.lengthSync());
-      var destination = 'firmas/firma_$userName.png';
+          storage.Media(archivoASubir.openRead(), archivoASubir.lengthSync());
+      var destino = 'firmas/firma_$nombreUsuario.png';
 
       try {
-        var insertRequest = storage.Object()
-          ..bucket = bucketName
-          ..name = destination;
+        var solicitudInsertar = storage.Object()
+          ..bucket = nombreBucket
+          ..name = destino;
 
-        var response = await storage.StorageApi(client)
+        var respuesta = await storage.StorageApi(cliente)
             .objects
-            .insert(insertRequest, bucketName, uploadMedia: media);
-        print('Archivo cargado con éxito a Google Cloud Storage');
-
-        var publicUrl =
-            'https://storage.googleapis.com/$bucketName/$destination';
-        print('URL de la firma: $publicUrl');
-
-        return publicUrl;
+            .insert(solicitudInsertar, nombreBucket, uploadMedia: media);
+        var urlPublica =
+            'https://storage.googleapis.com/$nombreBucket/$destino';
+        return urlPublica;
       } catch (e) {
-        print('Error al cargar el archivo: $e');
         return null;
       } finally {
-        client.close();
+        cliente.close();
       }
     }
     return null;
   }
 
-  void onChangedApplyFormat(String text) {
-    RUTValidator.formatFromTextController(_rutController);
+  // Formatea el RUT ingresado
+  void alCambiarAplicarFormato(String texto) {
+    RUTValidator.formatFromTextController(_controladorRut);
   }
 
   final List<String> _roles = [
@@ -114,46 +114,48 @@ class _UserFormScreenState extends State<UserFormScreen> {
     'Gerente General',
   ];
 
-  Future<void> _submitData() async {
-    if (_formKey.currentState!.validate()) {
+  // Envía los datos del formulario al servidor
+  Future<void> _enviarDatos() async {
+    if (_claveFormulario.currentState!.validate()) {
       setState(() {
-        _isLoading = true;
+        _estaCargando = true;
       });
 
-      String? signatureUrl;
-      if (_isGeneralManager) {
-        final fullName =
-            '${_firstNameController.text}_${_lastNamePController.text}_${_lastNameMController.text}';
-        signatureUrl = await _uploadSignatureToGoogleCloud(fullName);
+      String? urlFirma;
+      if (_esGerenteGeneral) {
+        final nombreCompleto =
+            '${_controladorNombres.text}_${_controladorApellidoP.text}_${_controladorApellidoM.text}';
+        urlFirma = await _subirFirmaAGoogleCloud(nombreCompleto);
       }
 
-      Map<String, String> userData = {
-        'rut': _rutController.text,
-        'nombres': _firstNameController.text,
-        'apellido_p': _lastNamePController.text,
-        'apellido_m': _lastNameMController.text,
-        'correo_electronico': _emailController.text,
-        'rol': _selectedRole ?? '',
-        'password': _passwordController.text,
-        'firma': signatureUrl ?? 'null',
+      Map<String, String> datosUsuario = {
+        'rut': _controladorRut.text,
+        'nombres': _controladorNombres.text,
+        'apellido_p': _controladorApellidoP.text,
+        'apellido_m': _controladorApellidoM.text,
+        'correo_electronico': _controladorCorreo.text,
+        'rol': _rolSeleccionado ?? '',
+        'password': _controladorContrasena.text,
+        'firma': urlFirma ?? 'null',
       };
 
-      String jsonData = jsonEncode(userData);
+      String datosJson = jsonEncode(datosUsuario);
 
       try {
-        await UserAPI.sendUserData(jsonData);
-        _showSuccessMessage();
+        await UsuarioAPI.enviarDatosUsuario(datosJson);
+        _mostrarMensajeExito();
       } catch (error) {
-        _showErrorMessage();
+        _mostrarMensajeError();
       } finally {
         setState(() {
-          _isLoading = false;
+          _estaCargando = false;
         });
       }
     }
   }
 
-  void _showSuccessMessage() {
+  // Muestra un mensaje de éxito
+  void _mostrarMensajeExito() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Datos enviados con éxito!'),
@@ -162,23 +164,36 @@ class _UserFormScreenState extends State<UserFormScreen> {
     );
   }
 
-  void _showErrorMessage() {
+  // Muestra un mensaje de error
+  void _mostrarMensajeError() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Error al enviar datos'),
+        content: Text('Error al enviar los datos!'),
         backgroundColor: Colors.red,
       ),
     );
+  }
+
+  // Valida la contraseña ingresada
+  String? _validarContrasena(String? valor) {
+    if (valor == null || valor.isEmpty) {
+      return 'Por favor ingrese la contraseña';
+    }
+    RegExp regExp = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[A-Z]).{8,}$');
+    if (!regExp.hasMatch(valor)) {
+      return 'La contraseña debe tener al menos 8 caracteres, 1 letra, 1 número y 1 mayúscula';
+    }
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Crear Usuario')),
-      body: _isLoading
+      body: _estaCargando
           ? Center(child: CircularProgressIndicator())
           : Form(
-              key: _formKey,
+              key: _claveFormulario,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -191,8 +206,8 @@ class _UserFormScreenState extends State<UserFormScreen> {
                           FocusTraversalOrder(
                             order: NumericFocusOrder(1),
                             child: TextFormField(
-                                controller: _rutController,
-                                onChanged: onChangedApplyFormat,
+                                controller: _controladorRut,
+                                onChanged: alCambiarAplicarFormato,
                                 decoration: const InputDecoration(
                                   labelText: 'RUT (Sin puntos y sin guión)',
                                   border: OutlineInputBorder(),
@@ -206,13 +221,13 @@ class _UserFormScreenState extends State<UserFormScreen> {
                           FocusTraversalOrder(
                             order: NumericFocusOrder(2),
                             child: TextFormField(
-                              controller: _firstNameController,
+                              controller: _controladorNombres,
                               decoration: const InputDecoration(
                                 labelText: 'Nombres',
                                 border: OutlineInputBorder(),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
+                              validator: (valor) {
+                                if (valor == null || valor.isEmpty) {
                                   return 'Por favor ingrese los nombres';
                                 }
                                 return null;
@@ -223,13 +238,13 @@ class _UserFormScreenState extends State<UserFormScreen> {
                           FocusTraversalOrder(
                             order: NumericFocusOrder(3),
                             child: TextFormField(
-                              controller: _lastNamePController,
+                              controller: _controladorApellidoP,
                               decoration: const InputDecoration(
                                 labelText: 'Apellido Paterno',
                                 border: OutlineInputBorder(),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
+                              validator: (valor) {
+                                if (valor == null || valor.isEmpty) {
                                   return 'Por favor ingrese el apellido paterno';
                                 }
                                 return null;
@@ -240,13 +255,13 @@ class _UserFormScreenState extends State<UserFormScreen> {
                           FocusTraversalOrder(
                             order: NumericFocusOrder(4),
                             child: TextFormField(
-                              controller: _lastNameMController,
+                              controller: _controladorApellidoM,
                               decoration: const InputDecoration(
                                 labelText: 'Apellido Materno',
                                 border: OutlineInputBorder(),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
+                              validator: (valor) {
+                                if (valor == null || valor.isEmpty) {
                                   return 'Por favor ingrese el apellido materno';
                                 }
                                 return null;
@@ -257,17 +272,17 @@ class _UserFormScreenState extends State<UserFormScreen> {
                           FocusTraversalOrder(
                             order: NumericFocusOrder(5),
                             child: TextFormField(
-                              controller: _emailController,
+                              controller: _controladorCorreo,
                               decoration: const InputDecoration(
                                 labelText: 'Correo Electrónico',
                                 border: OutlineInputBorder(),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
+                              validator: (valor) {
+                                if (valor == null || valor.isEmpty) {
                                   return 'Por favor ingrese el correo electrónico';
                                 }
                                 if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                                    .hasMatch(value)) {
+                                    .hasMatch(valor)) {
                                   return 'Formato de correo inválido';
                                 }
                                 return null;
@@ -278,41 +293,36 @@ class _UserFormScreenState extends State<UserFormScreen> {
                           FocusTraversalOrder(
                             order: NumericFocusOrder(6),
                             child: TextFormField(
-                              controller: _passwordController,
+                              controller: _controladorContrasena,
                               decoration: const InputDecoration(
                                 labelText: 'Contraseña',
                                 border: OutlineInputBorder(),
                               ),
                               obscureText: true,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Por favor ingrese la contraseña';
-                                }
-                                return null;
-                              },
+                              validator: _validarContrasena,
                             ),
                           ),
                           const SizedBox(height: 16),
                           FocusTraversalOrder(
                             order: NumericFocusOrder(7),
                             child: DropdownButtonFormField<String>(
-                              value: _selectedRole,
+                              value: _rolSeleccionado,
                               hint: Text('Seleccione un rol'),
-                              onChanged: (newValue) {
+                              onChanged: (nuevoValor) {
                                 setState(() {
-                                  _selectedRole = newValue;
-                                  _isGeneralManager =
-                                      newValue == 'Gerente General';
+                                  _rolSeleccionado = nuevoValor;
+                                  _esGerenteGeneral =
+                                      nuevoValor == 'Gerente General';
                                 });
                               },
-                              items: _roles.map((role) {
+                              items: _roles.map((rol) {
                                 return DropdownMenuItem(
-                                  value: role,
-                                  child: Text(role),
+                                  value: rol,
+                                  child: Text(rol),
                                 );
                               }).toList(),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
+                              validator: (valor) {
+                                if (valor == null || valor.isEmpty) {
                                   return 'Por favor seleccione un rol';
                                 }
                                 return null;
@@ -320,12 +330,12 @@ class _UserFormScreenState extends State<UserFormScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          if (_isGeneralManager) ...[
+                          if (_esGerenteGeneral) ...[
                             const Text('Firma del Gerente General',
                                 style: TextStyle(fontSize: 18)),
                             const SizedBox(height: 20),
                             Signature(
-                              controller: _signatureController,
+                              controller: _controladorFirma,
                               height: 200,
                               backgroundColor: Colors.grey[200]!,
                             ),
@@ -335,13 +345,13 @@ class _UserFormScreenState extends State<UserFormScreen> {
                               children: [
                                 ElevatedButton(
                                   onPressed: () {
-                                    _signatureController.clear();
+                                    _controladorFirma.clear();
                                   },
                                   child: const Text('Borrar'),
                                 ),
                                 ElevatedButton(
                                   onPressed: () async {
-                                    await _saveSignatureTemporarily();
+                                    await _guardarFirmaTemporalmente();
                                   },
                                   child: const Text('Guardar'),
                                 ),
@@ -350,7 +360,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
                             const SizedBox(height: 20),
                           ],
                           ElevatedButton(
-                            onPressed: _submitData,
+                            onPressed: _enviarDatos,
                             child: Text('Enviar'),
                           ),
                         ],

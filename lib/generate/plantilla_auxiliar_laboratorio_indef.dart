@@ -25,9 +25,7 @@ Future<void> uploadFileToGoogleCloud(String filePath) async {
     await storage.StorageApi(client)
         .objects
         .insert(insertRequest, bucketName, uploadMedia: media);
-    print('Archivo cargado con éxito a Google Cloud Storage');
   } catch (e) {
-    print('Error al cargar el archivo: $e');
   } finally {
     client.close();
   }
@@ -840,7 +838,7 @@ Future<void> generarPdfAuxiliarLIndef(
                           child: pw.Divider(),
                         ),
                         pw.Text('World Survey Services S.A. (WSS)'),
-                        pw.Text('RUT: 96947280-5'),
+                        pw.Text('RUT: 96.947.280-5'),
                         pw.Text('Empresa'),
                       ],
                     ),
@@ -870,7 +868,8 @@ Future<void> generarPdfAuxiliarLIndef(
   }
 
   Future<void> manageFileUpload(String nombres) async {
-    String initialFileName = 'Contrato $nombres'; // Nombre inicial del archivo
+    String initialFileName =
+        'Contrato_$nombres' + rut; // Nombre inicial del archivo
     String? filePath = await FilePicker.platform.saveFile(
       dialogTitle: 'Elige donde desea guardar su contrato',
       fileName: initialFileName,

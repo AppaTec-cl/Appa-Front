@@ -14,13 +14,23 @@ class ContractService {
       );
 
       if (response.statusCode == 201) {
-        print("Contrato creado con éxito.");
-      } else {
-        print("Error al crear contrato: ${response.body}");
-      }
-    } catch (e) {
-      print("Error de conexión: $e");
-    }
+      } else {}
+    } catch (e) {}
+  }
+
+  Future<Contract?> getContractByRut(String rut) async {
+    Uri url = Uri.parse(
+        'https://appatec-back-3c17836d3790.herokuapp.com/get_contract_by_rut/$rut');
+    try {
+      var response = await http.get(url);
+      if (response.statusCode == 200) {
+        var jsonData = jsonDecode(response.body);
+        if (jsonData != null && jsonData.isNotEmpty) {
+          return Contract.fromJson(jsonData);
+        }
+      } else {}
+    } catch (e) {}
+    return null;
   }
 }
 
@@ -223,7 +233,6 @@ Future<List<Contract>> fetchAllContracts(String status) async {
 
   if (response.statusCode == 200) {
     List<dynamic> contractsJson = jsonDecode(response.body);
-    print('JSON recibido del backend: $contractsJson');
     return contractsJson.map((json) => Contract.fromJson(json)).toList();
   } else {
     throw Exception('Failed to load contracts');

@@ -2,26 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:ACG/presentation/screen/crear_usuario.dart';
 import 'package:ACG/presentation/screen/revisar_contrato.dart';
 import 'package:ACG/presentation/screen/firmar_gerente.dart';
-import 'package:ACG/presentation/screen/historial_trabajador.dart';
 import 'package:ACG/presentation/screen/inicio_jefe.dart';
 import 'package:ACG/presentation/theme_switcher.dart';
+import 'package:ACG/presentation/screen/resetear_contraseña.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ACG/dart_rut_validator.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class LoginScreen extends StatelessWidget {
-  final Function toggleTheme;
-  final bool isDarkMode;
+// Pantalla de inicio de sesión
+class PantallaInicioSesion extends StatelessWidget {
+  final Function alternarTema;
+  final bool modoOscuro;
 
-  LoginScreen({super.key, required this.toggleTheme, required this.isDarkMode});
+  PantallaInicioSesion(
+      {super.key, required this.alternarTema, required this.modoOscuro});
 
-  final TextEditingController loginController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController controladorUsuario = TextEditingController();
+  final TextEditingController controladorContrasena = TextEditingController();
 
-  void onChangedApplyFormat(String text) {
-    RUTValidator.formatFromTextController(loginController);
+  // Formatea el texto ingresado en el campo de RUT
+  void alCambiarAplicarFormato(String texto) {
+    RUTValidator.formatFromTextController(controladorUsuario);
   }
 
   @override
@@ -72,8 +75,8 @@ class LoginScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
                   TextField(
-                    onChanged: onChangedApplyFormat,
-                    controller: loginController,
+                    onChanged: alCambiarAplicarFormato,
+                    controller: controladorUsuario,
                     decoration: const InputDecoration(
                       labelText: 'Ingresa tu RUT',
                       border: OutlineInputBorder(),
@@ -81,20 +84,27 @@ class LoginScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   TextField(
-                    controller: passwordController,
+                    controller: controladorContrasena,
                     decoration: const InputDecoration(
                       labelText: 'Ingresa tu Contraseña',
                       border: OutlineInputBorder(),
                     ),
                     obscureText: true,
                   ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () {
+                      mostrarDialogoRecuperarContrasena(context);
+                    },
+                    child: const Text('Recuperar Contraseña'),
+                  ),
                   const SizedBox(height: 32),
                   ElevatedButton(
                     onPressed: () {
-                      String loginId = loginController.text;
-                      String password = passwordController.text;
-                      if (loginId.isNotEmpty && password.isNotEmpty) {
-                        loginUser(loginId, password, context);
+                      String idUsuario = controladorUsuario.text;
+                      String contrasena = controladorContrasena.text;
+                      if (idUsuario.isNotEmpty && contrasena.isNotEmpty) {
+                        iniciarSesion(idUsuario, contrasena, context);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                             content: Text(
@@ -110,10 +120,10 @@ class LoginScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('¿No tienes una cuenta?'),
+                      const Text('¿Eres administrador?'),
                       Flexible(
                         child: TextButton(
-                          onPressed: () => _showAdminContactDialog(context),
+                          onPressed: () => mostrarDialogoContactoAdmin(context),
                           child: const Text('Crear Cuenta'),
                         ),
                       ),
@@ -125,25 +135,87 @@ class LoginScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: ThemeSwitcher(
-        toggleTheme: toggleTheme,
-        isDarkMode: isDarkMode,
+      floatingActionButton: AlternadorTema(
+        alternarTema: alternarTema,
+        modoOscuro: modoOscuro,
       ),
     );
   }
 }
 
-List password = ['Bmc1201*', 'Cyphound2257!', 'Rosut0', 'rhj1202@'];
+// Muestra un diálogo para recuperar la contraseña
+void mostrarDialogoRecuperarContrasena(BuildContext context) {
+  final TextEditingController controladorRut = TextEditingController();
+  void alCambiarAplicarFormato2(String texto) {
+    RUTValidator.formatFromTextController(controladorRut);
+  }
 
-void _showAdminContactDialog(BuildContext context) {
-  final TextEditingController passwordAdminController = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Recuperar Contraseña'),
+        content: TextField(
+          controller: controladorRut,
+          onChanged: alCambiarAplicarFormato2,
+          decoration: const InputDecoration(
+            labelText: 'Ingresa tu RUT',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Enviar'),
+            onPressed: () {
+              solicitarRecuperacionContrasena(controladorRut.text).then((_) {
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => PaginaRestablecerContrasena()),
+                );
+              });
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+// Solicita la recuperación de contraseña enviando el RUT al servidor
+Future<void> solicitarRecuperacionContrasena(String rut) async {
+  final url = 'https://appatec-back-3c17836d3790.herokuapp.com/request_reset';
+  final response = await http.post(
+    Uri.parse(url),
+    headers: {'Content-Type': 'application/json'},
+    body: json.encode({'rut': rut}),
+  );
+
+  if (response.statusCode == 200) {
+    // Recuperación de contraseña exitosa
+  } else {
+    // Manejo de error
+  }
+}
+
+// Muestra un diálogo para el contacto del administrador
+void mostrarDialogoContactoAdmin(BuildContext context) {
+  final TextEditingController controladorContrasenaAdmin =
+      TextEditingController();
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Ingresar Contraseña'),
         content: TextField(
-          controller: passwordAdminController,
+          controller: controladorContrasenaAdmin,
           decoration: const InputDecoration(
             labelText: 'Ingresa tu Contraseña',
             border: OutlineInputBorder(),
@@ -160,14 +232,14 @@ void _showAdminContactDialog(BuildContext context) {
           TextButton(
             child: const Text('Aceptar'),
             onPressed: () {
-              if (passwordAdminController.text == password[0] ||
-                  passwordAdminController.text == password[1] ||
-                  passwordAdminController.text == password[2] ||
-                  passwordAdminController.text == password[3]) {
+              if (controladorContrasenaAdmin.text == 'Bmc1201*' ||
+                  controladorContrasenaAdmin.text == 'Cyphound2257!' ||
+                  controladorContrasenaAdmin.text == 'Rosut0' ||
+                  controladorContrasenaAdmin.text == 'rhj1202@') {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => UserFormScreen(),
+                    builder: (context) => PantallaFormularioUsuario(),
                   ),
                 );
               } else {
@@ -185,8 +257,9 @@ void _showAdminContactDialog(BuildContext context) {
   );
 }
 
-Future<void> loginUser(
-    String rut, String password, BuildContext context) async {
+// Inicia sesión enviando el RUT y la contraseña al servidor
+Future<void> iniciarSesion(
+    String rut, String contrasena, BuildContext context) async {
   final response = await http.post(
     Uri.parse('https://appatec-back-3c17836d3790.herokuapp.com/login'),
     headers: <String, String>{
@@ -194,38 +267,36 @@ Future<void> loginUser(
     },
     body: jsonEncode(<String, String>{
       'rut': rut,
-      'password': password,
+      'password': contrasena,
     }),
   );
 
   if (response.statusCode == 200) {
-    var data = jsonDecode(response.body);
-    var role = data['rol'];
-    var name = data['nombre'];
-    var userId = data['id_usuario'];
+    var datos = jsonDecode(response.body);
+    var rol = datos['rol'];
+    var nombre = datos['nombre'];
+    var idUsuario = datos['id_usuario'];
 
     // Almacenamiento de los datos de sesión
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userRole', role);
-    await prefs.setString('userName', name);
-    await prefs.setString('userId', userId);
+    await prefs.setString('rolUsuario', rol);
+    await prefs.setString('nombreUsuario', nombre);
+    await prefs.setString('idUsuario', idUsuario);
 
-    switch (role) {
+    switch (rol) {
       case 'Jefe de Recursos Humanos':
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => InicioJefe()));
         break;
       case 'Gerente':
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => ContractReviewPage()));
+            MaterialPageRoute(builder: (context) => PaginaRevisarContrato()));
         break;
       case 'Gerente General':
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => GerentPage()));
+            context, MaterialPageRoute(builder: (context) => PaginaGerente()));
         break;
       default:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => ContractWorkerPage()));
         break;
     }
   } else {
