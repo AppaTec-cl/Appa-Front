@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>C:\Users\bayro\OneDrive\Documentos\GitHub\Appa-Front\windows\build\x64\Release\ZERO_CHECK</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\bayro\OneDrive\Documentos\GitHub\Appa-Front\windows\build\x64\Release\flutter_assemble</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\bayro\OneDrive\Documentos\GitHub\Appa-Front\windows\build\plugins\file_saver\Release\file_saver_plugin.dll</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\bayro\OneDrive\Documentos\GitHub\Appa-Front\windows\build\plugins\printing\Release\printing_plugin.dll</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\bayro\OneDrive\Documentos\GitHub\Appa-Front\windows\build\plugins\syncfusion_pdfviewer_windows\Release\syncfusion_pdfviewer_windows_plugin.dll</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\bayro\OneDrive\Documentos\GitHub\Appa-Front\windows\build\plugins\url_launcher_windows\Release\url_launcher_windows_plugin.dll</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>C:\Users\bayro\OneDrive\Documentos\GitHub\Appa-Front\windows\build\runner\Release\Generacion_de_Contratos.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles />
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>

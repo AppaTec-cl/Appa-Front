@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:appatec_prototipo/presentation/screen/generar_contrato.dart';
-import 'package:appatec_prototipo/presentation/screen/mensajes_contratos.dart';
-import 'package:appatec_prototipo/presentation/screen/anexo.dart';
+import 'package:ACG/presentation/screen/generar_contrato.dart';
+import 'package:ACG/presentation/screen/mensajes_contratos.dart';
+import 'package:ACG/presentation/screen/anexo.dart';
 
 class InicioJefe extends StatelessWidget {
   @override
@@ -49,29 +49,17 @@ class InicioJefe extends StatelessWidget {
                   },
                   child: const Text('Generar Contrato'),
                 ),
-                const SizedBox(height: 20), // Espacio entre los botones
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ContractMessages(),
+                        builder: (context) => const ContractReviewPage(),
                       ),
                     );
                   },
-                  child: const Text('Revisar Contratos'),
-                ),
-                const SizedBox(height: 20), // Espacio entre los botones
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AnnexForm(),
-                      ),
-                    );
-                  },
-                  child: const Text('Generar Anexo'),
+                  child: const Text('Revisar Contrato'),
                 ),
               ],
             ),

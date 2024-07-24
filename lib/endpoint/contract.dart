@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:http/http.dart' as http;
 
 class ContractService {
   Future<void> submitContract(Contract contract) async {
-    Uri url = Uri.parse('http://127.0.0.1:5000/submit_contract');
+    Uri url = Uri.parse(
+        'https://appatec-back-3c17836d3790.herokuapp.com/submit_contract');
     try {
       var response = await http.post(
         url,
@@ -27,6 +29,8 @@ class Contract {
   String fechaExpiracion;
   String comentario;
   String contratoUrl;
+  int revisionGerente;
+  int revisionGerenteGeneral;
   List<String> userIds;
   String nombres;
   String apellidos;
@@ -44,9 +48,9 @@ class Contract {
   String fechaInicioTrabajo;
   String fechaFinalTrabajo;
   int indefinido;
-  int sueldoBase;
-  int asignacioColacion;
-  int bonoAsistencia;
+  String sueldoBase;
+  String asignacioColacion;
+  String bonoAsistencia;
   String id;
   String estado;
   int rGerente;
@@ -56,6 +60,8 @@ class Contract {
       required this.fechaExpiracion,
       required this.comentario,
       required this.contratoUrl,
+      required this.revisionGerente,
+      required this.revisionGerenteGeneral,
       required this.userIds,
       required this.nombres,
       required this.apellidos,
@@ -87,6 +93,9 @@ class Contract {
         fechaExpiracion: json['fecha_expiracion'] as String? ?? '',
         comentario: json['comentario'] as String? ?? '',
         contratoUrl: json['contrato'] as String? ?? '',
+        revisionGerente: (json['revision_gerente'] as int?)?.toInt() ?? 0,
+        revisionGerenteGeneral:
+            (json['revision_gerente_general'] as int?)?.toInt() ?? 0,
         userIds:
             json['user_ids'] != null ? List<String>.from(json['user_ids']) : [],
         nombres: json['nombres'] as String? ?? '',
@@ -102,14 +111,14 @@ class Contract {
         nombreEmpleador: json['nombre_empleador'] as String? ?? '',
         rutEmpleador: json['rut_empleador'] as String? ?? '',
         cargo: json['cargo'] as String? ?? '',
-        fechaInicioTrabajo: json['fecha_inicio_trabajo'] as String? ?? '',
-        fechaFinalTrabajo: json['fecha_final_trabajo'] as String? ?? '',
+        fechaInicioTrabajo: json['fecha_inicio'] as String? ?? '',
+        fechaFinalTrabajo: json['fecha_final'] as String? ?? '',
         indefinido: json['indefinido'] as int? ?? 0,
-        sueldoBase: (json['sueldo_base'] as num?)?.toInt() ?? 0,
-        asignacioColacion: (json['asignacio_colacion'] as num?)?.toInt() ?? 0,
-        bonoAsistencia: (json['bono_asistencia'] as num?)?.toInt() ?? 0,
+        sueldoBase: json['sueldo_base'] as String? ?? '',
+        asignacioColacion: json['asignacio_colacion'] as String? ?? '',
+        bonoAsistencia: json['bono_asistencia'] as String? ?? '',
         estado: json['estado'] as String? ?? '',
-        rGerente: (json['revision_gerente'] as num?)?.toInt() ?? 0);
+        rGerente: (json['revision_gerente'] as int?)?.toInt() ?? 0);
   }
 
   Map<String, dynamic> toJson() => {
@@ -160,15 +169,17 @@ void createAndSubmitContract(
     String cargo,
     String fInicio,
     String fFinal,
-    int sBase,
-    int aColacion,
-    int bAsistencia) {
+    String sBase,
+    String aColacion,
+    String bAsistencia) {
   List<String> userIds = [userId];
   Contract newContract = Contract(
     fechaInicio: inicio,
     fechaExpiracion: finalizacion,
     comentario: "Ninguno",
     contratoUrl: publicUrl,
+    revisionGerente: 0,
+    revisionGerenteGeneral: 0,
     userIds: userIds,
     nombres: nombres,
     apellidos: apellidos,
@@ -195,8 +206,8 @@ void createAndSubmitContract(
 }
 
 Future<List<Contract>> fetchContracts(String status) async {
-  final response =
-      await http.get(Uri.parse('http://127.0.0.1:5000/get_contracts/$status'));
+  final response = await http.get(Uri.parse(
+      'https://appatec-back-3c17836d3790.herokuapp.com/get_contracts/$status'));
 
   if (response.statusCode == 200) {
     List<dynamic> contractsJson = jsonDecode(response.body);
@@ -204,4 +215,26 @@ Future<List<Contract>> fetchContracts(String status) async {
   } else {
     throw Exception('Failed to load contracts');
   }
+}
+
+Future<List<Contract>> fetchAllContracts(String status) async {
+  final response = await http.get(Uri.parse(
+      'https://appatec-back-3c17836d3790.herokuapp.com/get_contracts_all/$status'));
+
+  if (response.statusCode == 200) {
+    List<dynamic> contractsJson = jsonDecode(response.body);
+    print('JSON recibido del backend: $contractsJson');
+    return contractsJson.map((json) => Contract.fromJson(json)).toList();
+  } else {
+    throw Exception('Failed to load contracts');
+  }
+}
+
+Future<List<Contract>> fetchContractsByStatuses(List<String> statuses) async {
+  List<Contract> allContracts = [];
+  for (String status in statuses) {
+    final contracts = await fetchAllContracts(status);
+    allContracts.addAll(contracts);
+  }
+  return allContracts;
 }

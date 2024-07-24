@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
-import 'package:appatec_prototipo/endpoint/contract.dart';
-import 'package:appatec_prototipo/generate/signed/analista_quimico.dart';
+import 'package:ACG/endpoint/contract.dart';
+import 'package:ACG/generate/signed/analista_quimico.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -301,9 +301,11 @@ class _GerentPageState extends State<GerentPage>
                                 _selectedContract?.bonoAsistencia,
                                 _selectedContract?.nombreEmpleador,
                                 _selectedContract?.rutEmpleador,
-                                getSignatureLink())
+                                getSignatureLink(),
+                                _selectedContract?.id,
+                              )
                             : null,
-                        child: const Text('Validar'),
+                        child: const Text('Firmar'),
                       )
                     ],
                   ),
@@ -317,8 +319,8 @@ class _GerentPageState extends State<GerentPage>
   }
 
   Future<void> validateContract(String contractId) async {
-    var url =
-        Uri.parse('http://127.0.0.1:5000/update_contract_gerent/$contractId');
+    var url = Uri.parse(
+        'https://appatec-back-3c17836d3790.herokuapp.com/update_contract_gerent/$contractId');
     try {
       var response = await http.post(url);
       if (response.statusCode == 200) {
@@ -339,8 +341,8 @@ class _GerentPageState extends State<GerentPage>
   }
 
   Future<void> rejectContract(String contractId, String comentario) async {
-    var url =
-        Uri.parse('http://127.0.0.1:5000/reject_contract_gerent/$contractId');
+    var url = Uri.parse(
+        'https://appatec-back-3c17836d3790.herokuapp.com/reject_contract_gerent/$contractId');
     try {
       var response = await http.post(
         url,
@@ -400,7 +402,7 @@ class _GerentPageState extends State<GerentPage>
       final userId = prefs.getString('userId') ?? 'default_user_id';
 
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:5000/sign'),
+        Uri.parse('https://appatec-back-3c17836d3790.herokuapp.com/sign'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

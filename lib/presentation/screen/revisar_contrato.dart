@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:appatec_prototipo/endpoint/contract.dart';
+import 'package:ACG/endpoint/contract.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -299,7 +299,8 @@ class _ContractReviewPageState extends State<ContractReviewPage>
   }
 
   Future<void> validateContract(String contractId) async {
-    var url = Uri.parse('http://127.0.0.1:5000/update_contract/$contractId');
+    var url = Uri.parse(
+        'https://appatec-back-3c17836d3790.herokuapp.com/update_contract/$contractId');
     try {
       var response = await http.post(url);
       if (response.statusCode == 200) {
@@ -320,7 +321,8 @@ class _ContractReviewPageState extends State<ContractReviewPage>
   }
 
   Future<void> rejectContract(String contractId, String comentario) async {
-    var url = Uri.parse('http://127.0.0.1:5000/reject_contract/$contractId');
+    var url = Uri.parse(
+        'https://appatec-back-3c17836d3790.herokuapp.com/reject_contract/$contractId');
     try {
       var response = await http.post(
         url,

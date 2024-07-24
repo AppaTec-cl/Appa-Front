@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:appatec_prototipo/presentation/screen/login.dart';
+import 'package:ACG/presentation/screen/login.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() {

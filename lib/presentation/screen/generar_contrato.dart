@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:appatec_prototipo/generate/plantilla_analista_quimico.dart';
-import 'package:appatec_prototipo/generate/plantilla_auxiliar_laboratorio.dart';
+import 'package:ACG/generate/plantilla_analista_quimico.dart';
+import 'package:ACG/generate/plantilla_auxiliar_laboratorio.dart';
+import 'package:ACG/generate/plantilla_tecnico_quimico.dart';
+import 'package:ACG/generate/plantilla_analista_quimico_indef.dart';
+import 'package:ACG/generate/plantilla_auxiliar_laboratorio_indef.dart';
+import 'package:ACG/generate/plantilla_tecnico_quimico_indef.dart';
+import 'package:ACG/dart_rut_validator.dart';
 import 'package:intl/intl.dart';
 
 class GenerateContractScreen extends StatefulWidget {
@@ -14,14 +19,15 @@ String _civil = 'Soltero';
 String _nacionalidad = 'Chile';
 String _salud = 'Fonasa';
 String _afp = 'ProVida';
-String _tipoC = 'Elige Tipo';
+String _tipoC = 'Analista Quimico';
 
 class _GenerateContractScreenState extends State<GenerateContractScreen> {
   final _formKey = GlobalKey<FormState>();
   final _salaryKey = GlobalKey<FormState>();
   final TextEditingController _dateControllernaci = TextEditingController();
   final TextEditingController _dateControllerini = TextEditingController();
-  final TextEditingController _dateControllerfina = TextEditingController();
+  final TextEditingController _dateControllerfina =
+      TextEditingController(text: "Indefinido");
   final TextEditingController _nombres = TextEditingController();
   final TextEditingController _apellidos = TextEditingController();
   final TextEditingController _direccion = TextEditingController();
@@ -34,6 +40,10 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
   final TextEditingController _rEmpleador = TextEditingController();
 
   bool _isChecked = false;
+
+  void onChangedApplyFormat(String text) {
+    RUTValidator.formatFromTextController(_rut);
+  }
 
   @override
   void dispose() {
@@ -223,6 +233,19 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
           },
         ),
       ),
+      const SizedBox(height: 20),
+      FocusTraversalOrder(
+        order: NumericFocusOrder(6),
+        child: TextFormField(
+            controller: _rut,
+            onChanged: onChangedApplyFormat,
+            decoration: const InputDecoration(
+              labelText: 'RUT',
+              border: OutlineInputBorder(),
+            ),
+            validator: RUTValidator(validationErrorText: 'Ingrese RUT válido')
+                .validator),
+      ),
     ];
   }
 
@@ -230,18 +253,6 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
     return [
       const Text('Información Laboral',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 20),
-      FocusTraversalOrder(
-        order: NumericFocusOrder(1),
-        child: TextFormField(
-          controller: _rut,
-          decoration: const InputDecoration(
-            labelText: 'RUT (Sin puntos y con guión)',
-            border: OutlineInputBorder(),
-          ),
-          validator: validateRUT, // Usa el validador de RUT aquí
-        ),
-      ),
       const SizedBox(height: 20),
       FocusTraversalOrder(
         order: NumericFocusOrder(2),
@@ -349,7 +360,6 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
             });
           },
           items: const [
-            DropdownMenuItem(value: 'Elige Tipo', child: Text('Elige Tipo')),
             DropdownMenuItem(
                 value: 'Analista Quimico', child: Text('Analista Quimico')),
             DropdownMenuItem(
@@ -412,6 +422,9 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
                   DateFormat('d \'de\' MMMM \'del\' yyyy', 'es_ES')
                       .format(date);
               _dateControllerfina.text = formattedDate;
+            } else {
+              _dateControllerfina.text =
+                  "Indefinido"; // Asigna "Indefinido" si no se selecciona una fecha
             }
           },
         ),
@@ -440,24 +453,26 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
       const SizedBox(height: 40),
       ElevatedButton(
         onPressed: _isChecked && _formKey.currentState!.validate()
-            ? generarPdfAnalistaQ(
-                _nombres.text,
-                _apellidos.text,
-                _direccion.text,
-                _civil,
-                _dateControllernaci.text,
-                _rut.text,
-                _correo.text,
-                _nacionalidad,
-                _salud,
-                _afp,
-                _dateControllerini.text,
-                _dateControllerfina.text,
-                _sueldoBase.text,
-                _colacion.text,
-                _bonoAsistencia.text,
-                _nEmpleador.text,
-                _rEmpleador.text)
+            ? () async {
+                await generarPdf(
+                    _nombres.text,
+                    _apellidos.text,
+                    _direccion.text,
+                    _civil,
+                    _dateControllernaci.text,
+                    _rut.text,
+                    _correo.text,
+                    _nacionalidad,
+                    _salud,
+                    _afp,
+                    _dateControllerini.text,
+                    _dateControllerfina.text,
+                    _sueldoBase.text,
+                    _colacion.text,
+                    _bonoAsistencia.text,
+                    _nEmpleador.text,
+                    _rEmpleador.text);
+              }
             : null,
         style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 50)),
@@ -495,11 +510,14 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
             SimpleDialogOption(
               child: TextFormField(
                 controller: _rEmpleador,
+                onChanged: onChangedApplyFormat,
                 decoration: const InputDecoration(
                   labelText: 'RUT Empleador',
                   border: OutlineInputBorder(),
                 ),
-                validator: validateRUT, // Validador de RUT
+                validator:
+                    RUTValidator(validationErrorText: 'Ingrese RUT válido')
+                        .validator, // Validador de RUT
               ),
             ),
             SimpleDialogOption(
@@ -630,17 +648,144 @@ class _GenerateContractScreenState extends State<GenerateContractScreen> {
     );
   }
 
-  String? validateRUT(String? value) {
-    if (value == null || !RegExp(r'^\d{1,8}-[0-9kK]{1}$').hasMatch(value)) {
-      return 'Formato de RUT inválido';
-    }
-    return null;
-  }
-
   String? validateEmail(String? value) {
     if (value == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
       return 'Formato de correo inválido';
     }
     return null;
+  }
+
+  Future<void> generarPdf(
+      String nombres,
+      String apellidos,
+      String direccion,
+      String civil,
+      String fechaNacimiento,
+      String rut,
+      String correo,
+      String nacionalidad,
+      String salud,
+      String afp,
+      String fechaInicio,
+      String fechaFin,
+      String sueldoBase,
+      String colacion,
+      String bonoAsistencia,
+      String nEmpleador,
+      String rEmpleador) async {
+    if (_tipoC == 'Analista Quimico' && fechaFin != 'Indefinido') {
+      await generarPdfAnalistaQ(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          fechaFin,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nEmpleador,
+          rEmpleador);
+    } else if (_tipoC == 'Analista Quimico' && fechaFin == 'Indefinido') {
+      await generarPdfAnalistaQIndef(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nEmpleador,
+          rEmpleador);
+    } else if (_tipoC == 'Auxiliar de Laboratorio' &&
+        fechaFin != 'Indefinido') {
+      await generarPdfAuxiliarL(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          fechaFin,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nEmpleador,
+          rEmpleador);
+    } else if (_tipoC == 'Auxiliar de Laboratorio' &&
+        fechaFin == 'Indefinido') {
+      await generarPdfAuxiliarLIndef(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nEmpleador,
+          rEmpleador);
+    } else if (_tipoC == 'Tecnico Quimico' && fechaFin != 'Indefinido') {
+      await generarPdfTecnicoQ(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          fechaFin,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nEmpleador,
+          rEmpleador);
+    } else if (_tipoC == 'Tecnico Quimico' && fechaFin == 'Indefinido') {
+      await generarPdfTecnicoQIndef(
+          nombres,
+          apellidos,
+          direccion,
+          civil,
+          fechaNacimiento,
+          rut,
+          correo,
+          nacionalidad,
+          salud,
+          afp,
+          fechaInicio,
+          sueldoBase,
+          colacion,
+          bonoAsistencia,
+          nEmpleador,
+          rEmpleador);
+    }
   }
 }

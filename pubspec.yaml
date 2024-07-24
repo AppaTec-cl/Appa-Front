@@ -1,5 +1,5 @@
-name: appatec_prototipo
-description: "A new Flutter project."
+name: ACG
+description: "Aplicacion de Generacion de Contratos"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -43,10 +43,12 @@ dependencies:
   googleapis_auth: ^1.6.0
   shared_preferences: ^2.2.3
   signature: ^5.5.0
+  validate_rut: ^0.2.2
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
+  msix: ^3.16.7
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +62,11 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
 
+flutter_intl:
+  enabled: true
+  locales:
+    - es
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -70,6 +77,7 @@ flutter:
     - assets/img/
     - assets/img/logo.png
     - assets/fonts/
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

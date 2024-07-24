@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
@@ -8,14 +9,14 @@ import 'package:googleapis/storage/v1.dart' as storage;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:googleapis_auth/auth_io.dart';
-import 'package:appatec_prototipo/endpoint/config.dart';
+import 'package:ACG/endpoint/config.dart';
 
 Future<void> uploadFileToGoogleCloud(String filePath) async {
   var client = await CloudStorageConfig.getClient();
   var bucketName = 'almacenamiento_pdf';
   var fileToUpload = File(filePath);
   var media = storage.Media(fileToUpload.openRead(), fileToUpload.lengthSync());
-  var destination = 'contratos/${fileToUpload.uri.pathSegments.last}';
+  var destination = 'contratos_firmados/${fileToUpload.uri.pathSegments.last}';
 
   try {
     var insertRequest = storage.Object()
@@ -65,7 +66,8 @@ generarPdfAnalistaQ(
         bonoAsistencia,
         nEmpleador,
         rEmpleador,
-        urlImagen) =>
+        urlImagen,
+        idContrato) =>
     () async {
       final pdf = pw.Document();
 
@@ -460,6 +462,7 @@ generarPdfAnalistaQ(
                 ),
                 pw.Column(
                   children: [
+                    pw.SizedBox(height: 25),
                     pw.Container(
                       width: 150,
                       child: pw.Divider(),
@@ -509,8 +512,33 @@ generarPdfAnalistaQ(
           await uploadFileToGoogleCloud(correctedFilePath);
           var publicUrl =
               'https://storage.googleapis.com/almacenamiento_pdf/contratos_firmados/$correctedFileName';
+
+          // Enviar el contrato a la API
+          await enviarContrato(publicUrl, idContrato);
         }
       }
 
       manageFileUpload(nombres);
     };
+
+Future<void> enviarContrato(String contrato, String id) async {
+  try {
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:5000/link_sign/$id'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'contrato': contrato,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Contrato enviado exitosamente');
+    } else {
+      print('Error al enviar contrato: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error al enviar contrato: $e');
+  }
+}

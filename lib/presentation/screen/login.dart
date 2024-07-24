@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:appatec_prototipo/presentation/screen/createUser.dart';
-import 'package:appatec_prototipo/presentation/screen/revisar_contrato.dart';
-import 'package:appatec_prototipo/presentation/screen/firmar_gerente.dart';
-import 'package:appatec_prototipo/presentation/screen/historial_trabajador.dart';
-import 'package:appatec_prototipo/presentation/screen/inicio_jefe.dart';
-import 'package:appatec_prototipo/presentation/theme_switcher.dart';
+import 'package:ACG/presentation/screen/crear_usuario.dart';
+import 'package:ACG/presentation/screen/revisar_contrato.dart';
+import 'package:ACG/presentation/screen/firmar_gerente.dart';
+import 'package:ACG/presentation/screen/historial_trabajador.dart';
+import 'package:ACG/presentation/screen/inicio_jefe.dart';
+import 'package:ACG/presentation/theme_switcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ACG/dart_rut_validator.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -18,6 +19,10 @@ class LoginScreen extends StatelessWidget {
 
   final TextEditingController loginController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  void onChangedApplyFormat(String text) {
+    RUTValidator.formatFromTextController(loginController);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,9 +72,10 @@ class LoginScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
                   TextField(
+                    onChanged: onChangedApplyFormat,
                     controller: loginController,
                     decoration: const InputDecoration(
-                      labelText: 'Ingresa tu RUT (Sin puntos y con guión)',
+                      labelText: 'Ingresa tu RUT',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -81,11 +87,6 @@ class LoginScreen extends StatelessWidget {
                       border: OutlineInputBorder(),
                     ),
                     obscureText: true,
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('Recuperar Contraseña'),
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
@@ -187,7 +188,7 @@ void _showAdminContactDialog(BuildContext context) {
 Future<void> loginUser(
     String rut, String password, BuildContext context) async {
   final response = await http.post(
-    Uri.parse('http://127.0.0.1:5000/login'),
+    Uri.parse('https://appatec-back-3c17836d3790.herokuapp.com/login'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
