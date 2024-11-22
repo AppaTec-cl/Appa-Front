@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ACG/presentation/screen/crear_usuario.dart';
-import 'package:ACG/presentation/screen/revisar_contrato.dart';
-import 'package:ACG/presentation/screen/firmar_gerente.dart';
-import 'package:ACG/presentation/screen/inicio_jefe.dart';
 import 'package:ACG/presentation/theme_switcher.dart';
 import 'package:ACG/presentation/screen/resetear_contraseña.dart';
 import 'package:shared_preferences/shared_preferences.dart';
